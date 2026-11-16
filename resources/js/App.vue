@@ -10,7 +10,7 @@
       @toast="showToast"
     />
 
-    <!-- Main Content: Responsive Campaign Hero Slider + Product Categories -->
+    <!-- Main Content: Responsive Campaign Hero Slider + Product Categories + New Arrival -->
     <main>
       <HeroSlider
         @claim-voucher="handleClaimVoucher"
@@ -20,7 +20,19 @@
       <ProductCategories
         @select-category="handleSelectCategory"
       />
+
+      <NewArrivalSection
+        @add-to-cart="handleAddNewArrivalToCart"
+        @view-detail="(product) => showToast('Membuka detail produk ' + product.name)"
+        @view-all="showToast('Membuka seluruh katalog produk New Arrival Koafy...')"
+      />
     </main>
+
+    <!-- Site Footer (Matching Header Tone & Responsive Web PC / Android / iOS) -->
+    <SiteFooter
+      @navigate="(nav) => (activeNav = nav)"
+      @toast="showToast"
+    />
 
     <!-- Slide-over Drawers (Wishlist, Shopping Bag, Mobile Menu) -->
     <SideDrawers
@@ -48,6 +60,8 @@ import { ref, computed } from 'vue';
 import NavbarHeader from './components/NavbarHeader.vue';
 import HeroSlider from './components/HeroSlider.vue';
 import ProductCategories from './components/ProductCategories.vue';
+import NewArrivalSection from './components/NewArrivalSection.vue';
+import SiteFooter from './components/SiteFooter.vue';
 import SideDrawers from './components/SideDrawers.vue';
 
 const activeNav = ref('home');
@@ -100,6 +114,22 @@ function handleClaimVoucher(slide) {
 
 function handleSelectCategory(cat) {
   showToast(`Menampilkan kategori produk: ${cat.name}`);
+}
+
+function handleAddNewArrivalToCart(product) {
+  const existing = cartItems.value.find((item) => item.id === product.id);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cartItems.value.push({
+      id: product.id,
+      name: product.name,
+      meta: `${product.brand} • ${product.volume}`,
+      price: product.price,
+      qty: 1,
+    });
+  }
+  showToast(`${product.name} ditambahkan ke Shopping Bag!`);
 }
 
 function moveToCart(itemId) {
