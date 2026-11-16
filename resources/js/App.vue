@@ -10,27 +10,45 @@
       @toast="showToast"
     />
 
-    <!-- Main Content: Responsive Campaign Hero Slider + Product Categories + New Arrival -->
+    <!-- Main Content Area: Home View OR Product Detail View -->
     <main>
-      <HeroSlider
-        @claim-voucher="handleClaimVoucher"
-        @toast="showToast"
-      />
+      <!-- 1. HOME VIEW -->
+      <template v-if="currentView === 'home'">
+        <HeroSlider
+          @claim-voucher="handleClaimVoucher"
+          @toast="showToast"
+        />
 
-      <ProductCategories
-        @select-category="handleSelectCategory"
-      />
+        <ProductCategories
+          @select-category="handleSelectCategory"
+        />
 
-      <NewArrivalSection
-        @add-to-cart="handleAddNewArrivalToCart"
-        @view-detail="(product) => showToast('Membuka detail produk ' + product.name)"
-        @view-all="showToast('Membuka seluruh katalog produk New Arrival Koafy...')"
-      />
+        <NewArrivalSection
+          :wishlist-ids="wishlistIds"
+          @add-to-cart="handleAddNewArrivalToCart"
+          @view-detail="openProductDetail"
+          @toggle-favorite="toggleFavorite"
+          @view-all="showToast('Membuka seluruh katalog produk New Arrival Koafy...')"
+        />
+      </template>
+
+      <!-- 2. PRODUCT DETAIL VIEW (Ref Images 1, 2, 3) -->
+      <template v-else-if="currentView === 'detail'">
+        <ProductDetail
+          :product="selectedProduct"
+          :is-favorite="wishlistIds.includes(selectedProduct?.id)"
+          @back-to-home="backToHome"
+          @add-to-cart="handleAddNewArrivalToCart"
+          @buy-now="handleBuyNow"
+          @toggle-favorite="toggleFavorite"
+          @toast="showToast"
+        />
+      </template>
     </main>
 
     <!-- Site Footer (Matching Header Tone & Responsive Web PC / Android / iOS) -->
     <SiteFooter
-      @navigate="(nav) => (activeNav = nav)"
+      @navigate="handleFooterNavigate"
       @toast="showToast"
     />
 
@@ -56,15 +74,19 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import NavbarHeader from './components/NavbarHeader.vue';
 import HeroSlider from './components/HeroSlider.vue';
 import ProductCategories from './components/ProductCategories.vue';
 import NewArrivalSection from './components/NewArrivalSection.vue';
+import ProductDetail from './components/ProductDetail.vue';
 import SiteFooter from './components/SiteFooter.vue';
 import SideDrawers from './components/SideDrawers.vue';
 
 const activeNav = ref('home');
+const currentView = ref('home'); // 'home' | 'detail'
+const selectedProduct = ref(null);
+
 const activeDrawer = ref(null);
 const activeDiscountValue = ref(0);
 const claimedVouchersCount = ref(0);
@@ -73,6 +95,8 @@ const wishlistItems = ref([
   { id: 'w1', name: 'Koafy Velvet Lip & Brush Set', meta: 'Rosewood Matte • 4.5g', price: 38 },
   { id: 'w2', name: 'Koafy Soft-Square Multi Balm Trio', meta: '3 Shades Set', price: 54 },
 ]);
+
+const wishlistIds = computed(() => wishlistItems.value.map((item) => item.id));
 
 const cartItems = ref([
   { id: 'c1', name: 'Koafy Crystal Butterbalm Duo', meta: 'Rosewood & Mauve', price: 68, qty: 1 },
@@ -116,20 +140,69 @@ function handleSelectCategory(cat) {
   showToast(`Menampilkan kategori produk: ${cat.name}`);
 }
 
+function openProductDetail(product) {
+  selectedProduct.value = product;
+  currentView.value = 'detail';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function backToHome() {
+  currentView.value = 'home';
+  activeNav.value = 'home';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+watch(activeNav, (newNav) => {
+  if (newNav === 'home') {
+    currentView.value = 'home';
+  }
+});
+
+function handleFooterNavigate(nav) {
+  activeNav.value = nav;
+  if (nav === 'home') {
+    backToHome();
+  }
+}
+
+function toggleFavorite(product) {
+  const idx = wishlistItems.value.findIndex((item) => item.id === product.id);
+  if (idx > -1) {
+    wishlistItems.value.splice(idx, 1);
+    showToast(`${product.name} dihapus dari Favorit`);
+  } else {
+    wishlistItems.value.push({
+      id: product.id,
+      name: product.name,
+      meta: `${product.brand || 'KOAFY'} • ${product.volume || '4.5g'}`,
+      price: product.price || 38,
+    });
+    showToast(`${product.name} ditambahkan ke Favorit ❤️`);
+  }
+}
+
 function handleAddNewArrivalToCart(product) {
+  const addQty = product.qty || 1;
   const existing = cartItems.value.find((item) => item.id === product.id);
   if (existing) {
-    existing.qty += 1;
+    existing.qty += addQty;
   } else {
     cartItems.value.push({
       id: product.id,
       name: product.name,
-      meta: `${product.brand} • ${product.volume}`,
-      price: product.price,
-      qty: 1,
+      meta: product.selectedShade
+        ? `${product.brand || 'KOAFY'} • ${product.selectedShade}`
+        : `${product.brand || 'KOAFY'} • ${product.volume || 'Standar'}`,
+      price: product.price || 38,
+      qty: addQty,
     });
   }
-  showToast(`${product.name} ditambahkan ke Shopping Bag!`);
+  showToast(`${product.name} (${addQty} item) ditambahkan ke Shopping Bag!`);
+}
+
+function handleBuyNow(product) {
+  handleAddNewArrivalToCart(product);
+  openDrawer('cart');
 }
 
 function moveToCart(itemId) {

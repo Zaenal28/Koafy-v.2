@@ -64,9 +64,29 @@
         :key="product.id"
         class="product-card"
       >
-        <!-- Product Image Box + Discount Badge Top-Left -->
-        <div class="product-card-media">
+        <!-- Product Image Box + Discount Badge Top-Left + Love Icon Top-Right (Image 4) -->
+        <div class="product-card-media" @click="$emit('view-detail', product)">
           <span class="product-badge-discount">{{ product.badge }}</span>
+
+          <button
+            type="button"
+            class="product-love-btn"
+            :class="{ active: isFavorite(product.id) }"
+            :aria-label="isFavorite(product.id) ? 'Hapus dari favorit' : 'Tambah ke favorit'"
+            @click.stop="$emit('toggle-favorite', product)"
+          >
+            <svg
+              width="19"
+              height="19"
+              :fill="isFavorite(product.id) ? '#F51487' : 'none'"
+              :stroke="isFavorite(product.id) ? '#F51487' : '#4B5563'"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+          </button>
+
           <img
             :src="product.image"
             :alt="product.name"
@@ -83,7 +103,9 @@
             <span>{{ product.volume }}</span>
           </div>
 
-          <h3 class="product-card-name" :title="product.name">{{ product.name }}</h3>
+          <h3 class="product-card-name" :title="product.name" @click="$emit('view-detail', product)">
+            {{ product.name }}
+          </h3>
 
           <!-- Star Rating (Reference Image Style) -->
           <div class="product-rating-row">
@@ -143,7 +165,18 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 
-defineEmits(['add-to-cart', 'view-all', 'view-detail']);
+const props = defineProps({
+  wishlistIds: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+const emit = defineEmits(['add-to-cart', 'view-all', 'view-detail', 'toggle-favorite']);
+
+function isFavorite(productId) {
+  return props.wishlistIds.includes(productId);
+}
 
 const trackRef = ref(null);
 let autoSlideInterval = null;
