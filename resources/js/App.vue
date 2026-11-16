@@ -1,16 +1,18 @@
 <template>
   <div>
-    <!-- Header & Top Announcement Bar -->
+    <!-- Header & Top Announcement Bar (Hidden on dedicated Auth view or shown smoothly) -->
     <NavbarHeader
+      v-if="currentView !== 'auth'"
       v-model:activeNav="activeNav"
       :wishlist-count="wishlistItems.length"
       :cart-count="cartTotalQty"
       :claimed-vouchers-count="claimedVouchersCount"
       @open-drawer="openDrawer"
+      @open-auth="openAuthPage"
       @toast="showToast"
     />
 
-    <!-- Main Content Area: Home View OR Product Detail View -->
+    <!-- Main Content Area: Home View | Product Detail View | Auth View -->
     <main>
       <!-- 1. HOME VIEW -->
       <template v-if="currentView === 'home'">
@@ -44,10 +46,20 @@
           @toast="showToast"
         />
       </template>
+
+      <!-- 3. AUTH VIEW (LOGIN & REGISTER - REF IMAGES 1 & 2) -->
+      <template v-else-if="currentView === 'auth'">
+        <AuthPage
+          @back-to-home="backToHome"
+          @toast="showToast"
+          @login-success="handleLoginSuccess"
+        />
+      </template>
     </main>
 
-    <!-- Site Footer (Matching Header Tone & Responsive Web PC / Android / iOS) -->
+    <!-- Site Footer (Hidden on dedicated Auth view) -->
     <SiteFooter
+      v-if="currentView !== 'auth'"
       @navigate="handleFooterNavigate"
       @toast="showToast"
     />
@@ -60,6 +72,7 @@
       :cart-items="cartItems"
       :active-discount-value="activeDiscountValue"
       @close-drawers="closeAllDrawers"
+      @open-auth="openAuthPage"
       @move-to-cart="moveToCart"
       @move-all-to-cart="moveAllToCart"
       @change-qty="changeCartQty"
@@ -82,9 +95,10 @@ import NewArrivalSection from './components/NewArrivalSection.vue';
 import ProductDetail from './components/ProductDetail.vue';
 import SiteFooter from './components/SiteFooter.vue';
 import SideDrawers from './components/SideDrawers.vue';
+import AuthPage from './components/AuthPage.vue';
 
 const activeNav = ref('home');
-const currentView = ref('home'); // 'home' | 'detail'
+const currentView = ref('home'); // 'home' | 'detail' | 'auth'
 const selectedProduct = ref(null);
 
 const activeDrawer = ref(null);
@@ -144,6 +158,16 @@ function openProductDetail(product) {
   selectedProduct.value = product;
   currentView.value = 'detail';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openAuthPage() {
+  currentView.value = 'auth';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleLoginSuccess(user) {
+  showToast(`Selamat datang, ${user.name || 'Member Koafy'}! Akun Anda siap digunakan.`);
+  backToHome();
 }
 
 function backToHome() {

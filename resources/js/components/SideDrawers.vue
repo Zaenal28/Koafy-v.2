@@ -192,6 +192,16 @@
       >
         Pages
       </a>
+      <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #F3F4F6;">
+        <button
+          type="button"
+          class="btn-primary"
+          style="width: 100%; height: 42px; font-size: 13.5px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;"
+          @click="openAuthFromMobile"
+        >
+          <span>👤 Masuk / Daftar</span>
+        </button>
+      </div>
     </div>
     <div class="drawer-footer" style="font-size:12px;color:#6B7280;">
       <strong>Koafy by HSK Secret</strong> &bull; Free shipping over $200
@@ -232,6 +242,7 @@ const emit = defineEmits([
   'change-qty',
   'checkout',
   'update:activeNav',
+  'open-auth',
 ]);
 
 const cartTotalQty = computed(() =>
@@ -259,5 +270,10 @@ const discountLabel = computed(() =>
 function selectMobileNav(nav) {
   emit('update:activeNav', nav);
   emit('close-drawers');
+}
+
+function openAuthFromMobile() {
+  emit('close-drawers');
+  emit('open-auth');
 }
 </script>

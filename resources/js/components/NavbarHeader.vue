@@ -175,6 +175,15 @@
                 <div class="profile-tier">Koafy Rose VIP Member</div>
               </div>
             </div>
+            <button
+              type="button"
+              class="profile-menu-link"
+              style="background-color: var(--koafy-pink-soft); color: var(--koafy-pink); font-weight: 700; border-radius: 8px; margin-bottom: 6px;"
+              @click="handleAuthClick"
+            >
+              <span>Masuk / Daftar Akun</span>
+              <span>&rsaquo;</span>
+            </button>
             <button type="button" class="profile-menu-link" @click="triggerProfileToast('Membuka halaman My Profile')">
               <span>My Profile</span>
               <span>&rsaquo;</span>
@@ -239,7 +248,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['update:activeNav', 'open-drawer', 'toast']);
+const emit = defineEmits(['update:activeNav', 'open-drawer', 'toast', 'open-auth']);
 
 const isScrolled = ref(false);
 const isPagesOpen = ref(false);
@@ -250,6 +259,11 @@ const searchQuery = ref('');
 const pagesDropdownRef = ref(null);
 const profileWrapperRef = ref(null);
 const searchInputRef = ref(null);
+
+function handleAuthClick() {
+  isProfileOpen.value = false;
+  emit('open-auth');
+}
 
 function selectNav(nav) {
   emit('update:activeNav', nav);
