@@ -49,8 +49,8 @@
             </p>
           </div>
 
-          <!-- Social Login Buttons (Google & Apple) -->
-          <div class="auth-social-row">
+          <!-- Social Login Buttons (Google & Apple) - SEMENTARA DI-HIDE SESUAI PERMINTAAN USER -->
+          <div v-if="showSocialLogin" class="auth-social-row">
             <button
               type="button"
               class="auth-social-btn"
@@ -79,8 +79,8 @@
             </button>
           </div>
 
-          <!-- Divider "or" -->
-          <div class="auth-divider-row">
+          <!-- Divider "or" (Di-hide jika social login di-hide) -->
+          <div v-if="showSocialLogin" class="auth-divider-row">
             <span class="auth-divider-line"></span>
             <span class="auth-divider-text">or</span>
             <span class="auth-divider-line"></span>
@@ -254,11 +254,11 @@
           <div class="auth-switch-footer">
             <span v-if="!isRegister">
               Don't have an account?
-              <button type="button" class="auth-switch-btn" @click="isRegister = true">Sign up</button>
+              <button type="button" class="auth-switch-btn" @click="toggleAuthMode(true)">Sign up</button>
             </span>
             <span v-else>
               Already have an account?
-              <button type="button" class="auth-switch-btn" @click="isRegister = false">Sign in</button>
+              <button type="button" class="auth-switch-btn" @click="toggleAuthMode(false)">Sign in</button>
             </span>
           </div>
 
@@ -316,12 +316,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-const emit = defineEmits(['back-to-home', 'login-success', 'toast']);
+const props = defineProps({
+  initialMode: {
+    type: String,
+    default: 'login', // 'login' | 'register'
+  },
+});
 
-const isRegister = ref(false);
+const emit = defineEmits(['back-to-home', 'login-success', 'toast', 'switch-mode']);
+
+const isRegister = ref(props.initialMode === 'register');
 const showPassword = ref(false);
+const showSocialLogin = ref(false); // Sesuai permintaan user: di-hide dahulu
+
+watch(() => props.initialMode, (newMode) => {
+  isRegister.value = (newMode === 'register');
+});
+
+function toggleAuthMode(toRegister) {
+  isRegister.value = toRegister;
+  emit('switch-mode', toRegister ? 'register' : 'login');
+}
 
 const loginForm = ref({
   email: '',

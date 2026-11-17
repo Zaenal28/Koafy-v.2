@@ -5,16 +5,16 @@
   <div class="announcement-bar">
     <div class="marquee-track">
       <div class="marquee-group">
-        <span class="marquee-item">Core collection available now &nbsp;|&nbsp; get free shipping on orders over $200</span>
-        <span class="marquee-item">Core collection available now &nbsp;|&nbsp; get free shipping on orders over $200</span>
-        <span class="marquee-item">Core collection available now &nbsp;|&nbsp; get free shipping on orders over $200</span>
-        <span class="marquee-item">Core collection available now &nbsp;|&nbsp; get free shipping on orders over $200</span>
+        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
+        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
+        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
+        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
       </div>
       <div class="marquee-group" aria-hidden="true">
-        <span class="marquee-item">Core collection available now &nbsp;|&nbsp; get free shipping on orders over $200</span>
-        <span class="marquee-item">Core collection available now &nbsp;|&nbsp; get free shipping on orders over $200</span>
-        <span class="marquee-item">Core collection available now &nbsp;|&nbsp; get free shipping on orders over $200</span>
-        <span class="marquee-item">Core collection available now &nbsp;|&nbsp; get free shipping on orders over $200</span>
+        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
+        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
+        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
+        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
       </div>
     </div>
   </div>
@@ -184,6 +184,15 @@
               <span>Masuk / Daftar Akun</span>
               <span>&rsaquo;</span>
             </button>
+            <button
+              type="button"
+              class="profile-menu-link"
+              style="background-color: #FFF0F4; color: #D36279; font-weight: 700; border-radius: 8px; margin-bottom: 6px;"
+              @click="handleAdminClick"
+            >
+              <span>⚙️ Panel Admin Toko</span>
+              <span>&rsaquo;</span>
+            </button>
             <button type="button" class="profile-menu-link" @click="triggerProfileToast('Membuka halaman My Profile')">
               <span>My Profile</span>
               <span>&rsaquo;</span>
@@ -248,7 +257,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['update:activeNav', 'open-drawer', 'toast', 'open-auth']);
+const emit = defineEmits(['update:activeNav', 'open-drawer', 'toast', 'open-auth', 'open-admin']);
 
 const isScrolled = ref(false);
 const isPagesOpen = ref(false);
@@ -263,6 +272,11 @@ const searchInputRef = ref(null);
 function handleAuthClick() {
   isProfileOpen.value = false;
   emit('open-auth');
+}
+
+function handleAdminClick() {
+  isProfileOpen.value = false;
+  emit('open-admin');
 }
 
 function selectNav(nav) {

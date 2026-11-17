@@ -1,20 +1,21 @@
 <template>
   <div>
-    <!-- Header & Top Announcement Bar (Hidden on dedicated Auth view or shown smoothly) -->
+    <!-- Header & Top Announcement Bar (Hidden on Auth & Admin view) -->
     <NavbarHeader
-      v-if="currentView !== 'auth'"
+      v-if="currentView !== 'auth' && currentView !== 'admin'"
       v-model:activeNav="activeNav"
       :wishlist-count="wishlistItems.length"
       :cart-count="cartTotalQty"
       :claimed-vouchers-count="claimedVouchersCount"
       @open-drawer="openDrawer"
-      @open-auth="openAuthPage"
+      @open-auth="openAuthPage('login')"
+      @open-admin="openAdminPage"
       @toast="showToast"
     />
 
-    <!-- Main Content Area: Home View | Product Detail View | Auth View -->
+    <!-- Main Content Area: Home | Detail | Auth | Admin -->
     <main>
-      <!-- 1. HOME VIEW -->
+      <!-- 1. HOME VIEW (http://127.0.0.1:8000/) -->
       <template v-if="currentView === 'home'">
         <HeroSlider
           @claim-voucher="handleClaimVoucher"
@@ -25,16 +26,40 @@
           @select-category="handleSelectCategory"
         />
 
+        <!-- SECTION FLASH SALE (SEBELUM NEW ARRIVAL SESUAI REQUEST) -->
+        <FlashSaleSection
+          v-if="isFlashSaleActive"
+          :wishlist-ids="wishlistIds"
+          @add-to-cart="handleAddNewArrivalToCart"
+          @view-detail="openProductDetail"
+          @toggle-favorite="toggleFavorite"
+          @view-all="openProductsPage('all')"
+        />
+
         <NewArrivalSection
           :wishlist-ids="wishlistIds"
           @add-to-cart="handleAddNewArrivalToCart"
           @view-detail="openProductDetail"
           @toggle-favorite="toggleFavorite"
-          @view-all="showToast('Membuka seluruh katalog produk New Arrival Koafy...')"
+          @view-all="openProductsPage('all')"
         />
       </template>
 
-      <!-- 2. PRODUCT DETAIL VIEW (Ref Images 1, 2, 3) -->
+      <!-- 2. ALL PRODUCTS / SHOP ALL CATALOG VIEW (Ref Gambar 1 & Gambar 2) -->
+      <template v-else-if="currentView === 'products'">
+        <AllProductsPage
+          :initial-category="initialCategory"
+          :initial-subcategory="initialSubcategory"
+          :wishlist-ids="wishlistIds"
+          @add-to-cart="handleAddNewArrivalToCart"
+          @view-detail="openProductDetail"
+          @toggle-favorite="toggleFavorite"
+          @back-to-home="backToHome"
+          @toast="showToast"
+        />
+      </template>
+
+      <!-- 3. PRODUCT DETAIL VIEW -->
       <template v-else-if="currentView === 'detail'">
         <ProductDetail
           :product="selectedProduct"
@@ -47,32 +72,45 @@
         />
       </template>
 
-      <!-- 3. AUTH VIEW (LOGIN & REGISTER - REF IMAGES 1 & 2) -->
+      <!-- 3. AUTH VIEW (http://127.0.0.1:8000/login & http://127.0.0.1:8000/register) -->
       <template v-else-if="currentView === 'auth'">
         <AuthPage
+          :initial-mode="authMode"
+          @switch-mode="handleAuthSwitchMode"
           @back-to-home="backToHome"
           @toast="showToast"
           @login-success="handleLoginSuccess"
         />
       </template>
+
+      <!-- 4. ADMIN DASHBOARD VIEW (http://127.0.0.1:8000/admin) -->
+      <template v-else-if="currentView === 'admin'">
+        <AdminDashboard
+          v-model:is-flash-sale-active="isFlashSaleActive"
+          @go-to-store="backToHome"
+          @toast="showToast"
+        />
+      </template>
     </main>
 
-    <!-- Site Footer (Hidden on dedicated Auth view) -->
+    <!-- Site Footer (Hidden on Auth & Admin view) -->
     <SiteFooter
-      v-if="currentView !== 'auth'"
+      v-if="currentView !== 'auth' && currentView !== 'admin'"
       @navigate="handleFooterNavigate"
       @toast="showToast"
     />
 
-    <!-- Slide-over Drawers (Wishlist, Shopping Bag, Mobile Menu) -->
+    <!-- Slide-over Drawers (Hidden on Admin view) -->
     <SideDrawers
+      v-if="currentView !== 'admin'"
       v-model:activeNav="activeNav"
       :active-drawer="activeDrawer"
       :wishlist-items="wishlistItems"
       :cart-items="cartItems"
       :active-discount-value="activeDiscountValue"
       @close-drawers="closeAllDrawers"
-      @open-auth="openAuthPage"
+      @open-auth="openAuthPage('login')"
+      @open-admin="openAdminPage"
       @move-to-cart="moveToCart"
       @move-all-to-cart="moveAllToCart"
       @change-qty="changeCartQty"
@@ -87,19 +125,66 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import NavbarHeader from './components/NavbarHeader.vue';
 import HeroSlider from './components/HeroSlider.vue';
 import ProductCategories from './components/ProductCategories.vue';
+import FlashSaleSection from './components/FlashSaleSection.vue';
 import NewArrivalSection from './components/NewArrivalSection.vue';
 import ProductDetail from './components/ProductDetail.vue';
 import SiteFooter from './components/SiteFooter.vue';
 import SideDrawers from './components/SideDrawers.vue';
 import AuthPage from './components/AuthPage.vue';
+import AdminDashboard from './components/AdminDashboard.vue';
+import AllProductsPage from './components/AllProductsPage.vue';
 
 const activeNav = ref('home');
-const currentView = ref('home'); // 'home' | 'detail' | 'auth'
+const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin'
+const previousView = ref('home');
+const authMode = ref('login'); // 'login' | 'register'
 const selectedProduct = ref(null);
+const initialCategory = ref('all');
+const initialSubcategory = ref(null);
+const isFlashSaleActive = ref(localStorage.getItem('koafy_fs_active') !== 'false');
+
+watch(isFlashSaleActive, (val) => {
+  localStorage.setItem('koafy_fs_active', String(val));
+});
+
+// Synchronize SPA view with window.location.pathname
+function syncRouteFromPath() {
+  const path = window.location.pathname.toLowerCase();
+  if (path === '/admin' || path.startsWith('/admin/')) {
+    currentView.value = 'admin';
+  } else if (path === '/register' || path.startsWith('/register/')) {
+    currentView.value = 'auth';
+    authMode.value = 'register';
+  } else if (path === '/login' || path.startsWith('/login/')) {
+    currentView.value = 'auth';
+    authMode.value = 'login';
+  } else if (
+    path === '/products' ||
+    path === '/shop-all' ||
+    path === '/shop' ||
+    path === '/kategori' ||
+    path.startsWith('/products/')
+  ) {
+    currentView.value = 'products';
+    activeNav.value = 'shop-all';
+  } else {
+    currentView.value = 'home';
+    activeNav.value = 'home';
+  }
+}
+
+onMounted(() => {
+  syncRouteFromPath();
+  window.addEventListener('popstate', syncRouteFromPath);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', syncRouteFromPath);
+});
 
 const activeDrawer = ref(null);
 const activeDiscountValue = ref(0);
@@ -151,17 +236,51 @@ function handleClaimVoucher(slide) {
 }
 
 function handleSelectCategory(cat) {
-  showToast(`Menampilkan kategori produk: ${cat.name}`);
+  openProductsPage(cat.id);
+}
+
+function openProductsPage(cat = 'all', sub = null) {
+  initialCategory.value = cat;
+  initialSubcategory.value = sub;
+  previousView.value = 'home';
+  currentView.value = 'products';
+  activeNav.value = 'shop-all';
+  if (window.location.pathname !== '/products') {
+    window.history.pushState(null, '', '/products');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function openProductDetail(product) {
+  previousView.value = currentView.value;
   selectedProduct.value = product;
   currentView.value = 'detail';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function openAuthPage() {
+function openAuthPage(mode = 'login') {
+  authMode.value = mode;
   currentView.value = 'auth';
+  const targetUrl = mode === 'register' ? '/register' : '/login';
+  if (window.location.pathname !== targetUrl) {
+    window.history.pushState(null, '', targetUrl);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleAuthSwitchMode(mode) {
+  authMode.value = mode;
+  const targetUrl = mode === 'register' ? '/register' : '/login';
+  if (window.location.pathname !== targetUrl) {
+    window.history.pushState(null, '', targetUrl);
+  }
+}
+
+function openAdminPage() {
+  currentView.value = 'admin';
+  if (window.location.pathname !== '/admin') {
+    window.history.pushState(null, '', '/admin');
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -171,14 +290,25 @@ function handleLoginSuccess(user) {
 }
 
 function backToHome() {
+  if (previousView.value === 'products' && currentView.value === 'detail') {
+    previousView.value = 'home';
+    openProductsPage(initialCategory.value, initialSubcategory.value);
+    return;
+  }
+  previousView.value = 'home';
   currentView.value = 'home';
   activeNav.value = 'home';
+  if (window.location.pathname !== '/') {
+    window.history.pushState(null, '', '/');
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 watch(activeNav, (newNav) => {
-  if (newNav === 'home') {
-    currentView.value = 'home';
+  if (newNav === 'home' && currentView.value !== 'home') {
+    backToHome();
+  } else if (newNav === 'shop-all' && currentView.value !== 'products') {
+    openProductsPage();
   }
 });
 
@@ -186,6 +316,8 @@ function handleFooterNavigate(nav) {
   activeNav.value = nav;
   if (nav === 'home') {
     backToHome();
+  } else if (nav === 'shop-all') {
+    openProductsPage();
   }
 }
 

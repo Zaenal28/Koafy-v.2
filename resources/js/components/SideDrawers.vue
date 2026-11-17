@@ -192,7 +192,7 @@
       >
         Pages
       </a>
-      <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #F3F4F6;">
+      <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #F3F4F6; display: flex; flex-direction: column; gap: 8px;">
         <button
           type="button"
           class="btn-primary"
@@ -201,10 +201,18 @@
         >
           <span>👤 Masuk / Daftar</span>
         </button>
+        <button
+          type="button"
+          class="btn-outline-sm"
+          style="width: 100%; height: 40px; font-size: 13px; font-weight: 700; color: #D36279; border-color: rgba(211, 98, 121, 0.3); background-color: #FFF0F4; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;"
+          @click="openAdminFromMobile"
+        >
+          <span>⚙️ Panel Admin Toko</span>
+        </button>
       </div>
     </div>
     <div class="drawer-footer" style="font-size:12px;color:#6B7280;">
-      <strong>Koafy by HSK Secret</strong> &bull; Free shipping over $200
+      <strong>Koafy by HSK Secret</strong> &bull; Gratis ongkir pembelian di atas 200 RIBU
     </div>
   </aside>
 </template>
@@ -243,6 +251,7 @@ const emit = defineEmits([
   'checkout',
   'update:activeNav',
   'open-auth',
+  'open-admin',
 ]);
 
 const cartTotalQty = computed(() =>
@@ -275,5 +284,10 @@ function selectMobileNav(nav) {
 function openAuthFromMobile() {
   emit('close-drawers');
   emit('open-auth');
+}
+
+function openAdminFromMobile() {
+  emit('close-drawers');
+  emit('open-admin');
 }
 </script>
