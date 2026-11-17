@@ -595,77 +595,299 @@
       </section>
 
       <!-- =================================================================
-           TAB 3: PRODUK & KATALOG
+           TAB 3: PRODUK & KATALOG (REF GAMBAR MANAJEMEN PRODUK & KATALOG)
            ================================================================= -->
       <section v-else-if="currentTab === 'products'" class="admin-tab-body">
         <div class="admin-card-table-wrap">
-          <div class="card-table-header">
+
+          <!-- Top Bar: Header Title + Subtitle + Admin Pill -->
+          <div class="catalog-manage-header">
             <div>
-              <h2 class="card-table-title">Kelola Katalog Produk</h2>
-              <p class="card-table-subtitle">Daftar produk, harga normal, harga coret diskon, stok dan shade</p>
+              <h2 class="card-table-title" style="font-size: 20px; font-weight: 800; color: #111827; margin: 0;">Manajemen Produk &amp; Katalog</h2>
+              <p class="card-table-subtitle" style="font-size: 13px; color: #6B7280; margin: 4px 0 0 0;">Kelola operasional e-commerce real-time</p>
             </div>
+            <div class="header-admin-pill">
+              <span class="admin-avatar-mini">👤</span>
+              <span class="admin-pill-name">Admin</span>
+            </div>
+          </div>
+
+          <!-- Controls Bar: Search + Category Filter + Add Product Button -->
+          <div class="catalog-controls-bar">
+            <div class="controls-left">
+              <!-- Search Input -->
+              <div class="search-box-wrap">
+                <svg class="search-box-icon" width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+                <input
+                  v-model="productSearchQuery"
+                  type="text"
+                  placeholder="Cari produk / SKU.."
+                  class="catalog-search-input"
+                />
+              </div>
+
+              <!-- Category Dropdown Filter -->
+              <div class="category-select-wrap">
+                <select v-model="selectedCategoryFilter" class="catalog-cat-select" aria-label="Filter Kategori">
+                  <option value="all">-- Semua Kategori --</option>
+                  <option value="Skincare">Skincare</option>
+                  <option value="Makeup">Makeup</option>
+                  <option value="Hair Care">Hair Care</option>
+                  <option value="Body Care">Body Care</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Add Product Button (Pink) -->
             <button
               type="button"
-              class="btn-admin-pink"
-              @click="$emit('toast', 'Form tambah produk baru dibuka')"
+              class="btn-add-product-pink"
+              @click="openAddProductModal"
             >
               + Tambah Produk Baru
             </button>
           </div>
 
-          <div class="table-responsive">
-            <table class="admin-table">
+          <!-- Table Container (Responsive) -->
+          <div class="table-responsive catalog-table-scroll">
+            <table class="catalog-admin-table">
               <thead>
                 <tr>
-                  <th>Produk</th>
-                  <th>Kategori</th>
-                  <th>Harga Saat Ini</th>
-                  <th>Harga Coret</th>
-                  <th>Diskon</th>
-                  <th>Pilihan Shade</th>
-                  <th>Stok</th>
-                  <th>Aksi</th>
+                  <th class="th-sortable" @click="handleProductSort('name')">
+                    <span>Produk</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('sku')">
+                    <span>SKU</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('category')">
+                    <span>Kategori</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('normalPrice')">
+                    <span>Harga Normal</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('discountPrice')">
+                    <span>Harga Diskon</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('stock')">
+                    <span>Stok</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('status')">
+                    <span>Status</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('tglMasuk')">
+                    <span>Tgl Masuk</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('tglExpired')">
+                    <span>Tgl Expired</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('masaBerlaku')">
+                    <span>Masa Berlaku</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-sortable" @click="handleProductSort('statusExpired')">
+                    <span>Status Expired</span>
+                    <span class="sort-arrows">↑↓</span>
+                  </th>
+                  <th class="th-actions">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="prod in catalogProducts" :key="prod.id">
+                <tr v-for="prod in paginatedProducts" :key="prod.id">
+                  <!-- 1. Produk (Image + Name) -->
                   <td>
-                    <div class="product-cell-info">
-                      <div class="product-thumb-avatar">
-                        <img :src="prod.image" :alt="prod.name" />
-                      </div>
-                      <div>
-                        <strong>{{ prod.name }}</strong>
-                        <small>{{ prod.brand }} &bull; {{ prod.volume }}</small>
-                      </div>
+                    <div class="product-cell-group">
+                      <img :src="prod.image" :alt="prod.name" class="table-product-thumb" />
+                      <span class="table-product-name" :title="prod.name">{{ prod.name }}</span>
                     </div>
                   </td>
-                  <td><span class="cat-pill">{{ prod.category }}</span></td>
-                  <td><strong style="color:#F51487;">${{ prod.price }}.00</strong></td>
-                  <td><span class="price-strikethrough">${{ prod.originalPrice }}.00</span></td>
-                  <td><span class="discount-badge-table">-{{ prod.discountPercent }}%</span></td>
+
+                  <!-- 2. SKU -->
                   <td>
-                    <span v-if="prod.hasShades" class="badge-shades">✓ 3 Shade Warna</span>
-                    <span v-else class="text-muted-sm">-</span>
+                    <span class="sku-cell-text">{{ prod.sku }}</span>
                   </td>
+
+                  <!-- 3. Kategori -->
                   <td>
-                    <span :class="['stock-pill', prod.stock < 15 ? 'low' : 'ok']">
-                      {{ prod.stock }} pcs
+                    <span class="cat-cell-text">{{ prod.category }}</span>
+                  </td>
+
+                  <!-- 4. Harga Normal -->
+                  <td>
+                    <span class="price-normal-cell">{{ prod.normalPriceFormatted }}</span>
+                  </td>
+
+                  <!-- 5. Harga Diskon (Pink Rose) -->
+                  <td>
+                    <span class="price-discount-cell">{{ prod.discountPriceFormatted }}</span>
+                  </td>
+
+                  <!-- 6. Stok (Green or Red if <= 5) -->
+                  <td>
+                    <span :class="['stock-badge-cell', prod.stock <= 5 ? 'danger' : 'safe']">
+                      {{ prod.stock }} PCS
                     </span>
                   </td>
+
+                  <!-- 7. Status (ACTIVE pill) -->
                   <td>
                     <button
                       type="button"
-                      class="btn-table-action"
-                      @click="$emit('toast', `Mengedit produk ${prod.name}`)"
+                      class="btn-status-active-pill"
+                      :class="{ inactive: prod.status !== 'ACTIVE' }"
+                      :title="'Klik untuk toggle status'"
+                      @click="toggleProductActive(prod)"
                     >
-                      Edit
+                      {{ prod.status }}
                     </button>
+                  </td>
+
+                  <!-- 8. Tgl Masuk -->
+                  <td>
+                    <span class="date-cell-text">{{ prod.tglMasuk }}</span>
+                  </td>
+
+                  <!-- 9. Tgl Expired -->
+                  <td>
+                    <span class="date-cell-text">{{ prod.tglExpired }}</span>
+                  </td>
+
+                  <!-- 10. Masa Berlaku -->
+                  <td>
+                    <span class="remaining-cell-text">{{ prod.masaBerlaku }}</span>
+                  </td>
+
+                  <!-- 11. Status Expired (SAFE, WARNING, DANGER, EXPIRED) -->
+                  <td>
+                    <span :class="['expired-status-pill', prod.statusExpired.toLowerCase()]">
+                      {{ prod.statusExpired }}
+                    </span>
+                  </td>
+
+                  <!-- 12. Aksi (3 icons: Eye, Pencil, Trash) -->
+                  <td>
+                    <div class="row-actions-group">
+                      <!-- View / Eye -->
+                      <button
+                        type="button"
+                        class="icon-action-btn view"
+                        title="Lihat Detail Produk"
+                        @click="openViewProductModal(prod)"
+                      >
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </button>
+
+                      <!-- Edit / Pencil -->
+                      <button
+                        type="button"
+                        class="icon-action-btn edit"
+                        title="Edit Produk"
+                        @click="openEditProductModal(prod)"
+                      >
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                      </button>
+
+                      <!-- Delete / Trash -->
+                      <button
+                        type="button"
+                        class="icon-action-btn delete"
+                        title="Hapus Produk"
+                        @click="deleteCatalogProduct(prod)"
+                      >
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr v-if="filteredCatalogProducts.length === 0">
+                  <td colspan="12" style="text-align: center; padding: 40px; color: #9CA3AF;">
+                    Tidak ada produk yang cocok dengan pencarian atau filter kategori.
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <!-- Table Footer: entries per page, showing entries, pagination (Ref Gambar) -->
+          <div class="catalog-table-footer">
+            <div class="footer-entries-select">
+              <select v-model.number="entriesPerPage" class="entries-select" aria-label="Entries per page">
+                <option :value="5">5</option>
+                <option :value="8">8</option>
+                <option :value="10">10</option>
+                <option :value="25">25</option>
+              </select>
+              <span>entries per page</span>
+            </div>
+
+            <div class="footer-showing-info">
+              Showing <strong>{{ showingStart }}</strong> to <strong>{{ showingEnd }}</strong> of <strong>{{ filteredCatalogProducts.length }}</strong> entries
+            </div>
+
+            <div class="footer-pagination">
+              <button
+                type="button"
+                class="pag-btn"
+                :disabled="currentPage <= 1"
+                @click="currentPage = 1"
+              >
+                &laquo;
+              </button>
+              <button
+                type="button"
+                class="pag-btn"
+                :disabled="currentPage <= 1"
+                @click="currentPage--"
+              >
+                &lsaquo;
+              </button>
+              <button
+                v-for="page in totalPages"
+                :key="page"
+                type="button"
+                class="pag-btn page-num"
+                :class="{ active: currentPage === page }"
+                @click="currentPage = page"
+              >
+                {{ page }}
+              </button>
+              <button
+                type="button"
+                class="pag-btn"
+                :disabled="currentPage >= totalPages"
+                @click="currentPage++"
+              >
+                &rsaquo;
+              </button>
+              <button
+                type="button"
+                class="pag-btn"
+                :disabled="currentPage >= totalPages"
+                @click="currentPage = totalPages"
+              >
+                &raquo;
+              </button>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -1185,6 +1407,194 @@
         </form>
       </div>
     </div>
+
+    <!-- MODAL TAMBAH / EDIT PRODUK KATALOG (REF GAMBAR) -->
+    <div v-if="isProductModalOpen" class="admin-modal-backdrop" @click="isProductModalOpen = false">
+      <div class="admin-modal-card" @click.stop style="max-width: 580px;">
+        <div class="admin-modal-header">
+          <h3>{{ editingProduct ? 'Edit Data Produk & Katalog' : 'Tambah Produk Baru' }}</h3>
+          <button type="button" class="modal-close-btn" @click="isProductModalOpen = false">✕</button>
+        </div>
+
+        <form class="admin-modal-form" @submit.prevent="saveProductForm">
+          <div class="form-group">
+            <label class="form-label">Nama Produk*</label>
+            <input
+              v-model="productForm.name"
+              type="text"
+              required
+              placeholder="cth. Koafy Rose Hydrating Serum 50ml"
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Kode SKU*</label>
+              <input
+                v-model="productForm.sku"
+                type="text"
+                required
+                placeholder="cth. KFY-SER-001"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kategori Produk*</label>
+              <select v-model="productForm.category" required class="form-control" style="background:#FFF;">
+                <option value="Skincare">Skincare</option>
+                <option value="Makeup">Makeup</option>
+                <option value="Hair Care">Hair Care</option>
+                <option value="Body Care">Body Care</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Harga Normal*</label>
+              <input
+                v-model="productForm.normalPriceFormatted"
+                type="text"
+                required
+                placeholder="Rp 320.000"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Harga Diskon*</label>
+              <input
+                v-model="productForm.discountPriceFormatted"
+                type="text"
+                required
+                placeholder="Rp 269.000"
+                class="form-control"
+              />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Jumlah Stok (PCS)*</label>
+              <input
+                v-model.number="productForm.stock"
+                type="number"
+                min="0"
+                required
+                placeholder="45"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status Produk*</label>
+              <select v-model="productForm.status" class="form-control" style="background:#FFF;">
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Tanggal Masuk (DD-MM-YYYY)*</label>
+              <input
+                v-model="productForm.tglMasuk"
+                type="text"
+                required
+                placeholder="15-08-2026"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tanggal Expired (DD-MM-YYYY)*</label>
+              <input
+                v-model="productForm.tglExpired"
+                type="text"
+                required
+                placeholder="15-08-2029"
+                class="form-control"
+              />
+            </div>
+          </div>
+
+          <div class="admin-modal-actions">
+            <button type="button" class="btn-outline-sm" @click="isProductModalOpen = false">Batal</button>
+            <button type="submit" class="btn-admin-pink">Simpan Produk</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL PREVIEW DETAIL PRODUK (REF GAMBAR) -->
+    <div v-if="isProductViewModalOpen" class="admin-modal-backdrop" @click="isProductViewModalOpen = false">
+      <div class="admin-modal-card" @click.stop style="max-width: 520px;">
+        <div class="admin-modal-header">
+          <h3>Detail Produk &amp; Informasi Expired</h3>
+          <button type="button" class="modal-close-btn" @click="isProductViewModalOpen = false">✕</button>
+        </div>
+
+        <div v-if="viewingProduct" style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; gap: 16px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid #F3F4F6;">
+            <img :src="viewingProduct.image" :alt="viewingProduct.name" style="width: 68px; height: 68px; border-radius: 12px; object-fit: cover; border: 1px solid #E5E7EB;" />
+            <div>
+              <h4 style="font-size: 16px; font-weight: 700; color: #111827; margin: 0 0 4px 0;">{{ viewingProduct.name }}</h4>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="sku-cell-text" style="font-size: 12px; background: #F3F4F6; padding: 2px 8px; border-radius: 4px;">{{ viewingProduct.sku }}</span>
+                <span class="cat-cell-text" style="font-size: 12px; font-weight: 600;">{{ viewingProduct.category }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
+            <div>
+              <span style="color: #6B7280; display: block;">Harga Normal</span>
+              <strong style="color: #374151;">{{ viewingProduct.normalPriceFormatted }}</strong>
+            </div>
+            <div>
+              <span style="color: #6B7280; display: block;">Harga Diskon</span>
+              <strong style="color: #D36279; font-size: 15px;">{{ viewingProduct.discountPriceFormatted }}</strong>
+            </div>
+            <div>
+              <span style="color: #6B7280; display: block;">Jumlah Stok</span>
+              <strong :class="[viewingProduct.stock <= 5 ? 'danger' : 'safe']" style="font-weight: 800;">{{ viewingProduct.stock }} PCS</strong>
+            </div>
+            <div>
+              <span style="color: #6B7280; display: block;">Status Toko</span>
+              <span class="btn-status-active-pill" style="display: inline-block; cursor: default;">{{ viewingProduct.status }}</span>
+            </div>
+            <div>
+              <span style="color: #6B7280; display: block;">Tanggal Masuk</span>
+              <span>{{ viewingProduct.tglMasuk }}</span>
+            </div>
+            <div>
+              <span style="color: #6B7280; display: block;">Tanggal Expired</span>
+              <span>{{ viewingProduct.tglExpired }}</span>
+            </div>
+            <div>
+              <span style="color: #6B7280; display: block;">Masa Berlaku Tersisa</span>
+              <strong style="color: #111827;">{{ viewingProduct.masaBerlaku }}</strong>
+            </div>
+            <div>
+              <span style="color: #6B7280; display: block;">Status Expired</span>
+              <span :class="['expired-status-pill', viewingProduct.statusExpired.toLowerCase()]">
+                {{ viewingProduct.statusExpired }}
+              </span>
+            </div>
+          </div>
+
+          <div class="admin-modal-actions" style="margin-top: 10px;">
+            <button type="button" class="btn-outline-sm" @click="isProductViewModalOpen = false">Tutup</button>
+            <button
+              type="button"
+              class="btn-admin-pink"
+              @click="openEditProductModal(viewingProduct); isProductViewModalOpen = false;"
+            >
+              Edit Produk Ini
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1487,87 +1897,360 @@ function handleOrderAction(order) {
   emit('toast', `Membuka detail pesanan ${order.id} untuk ${order.buyer}`);
 }
 
-// 3. Data Produk Katalog
+// =========================================================================
+// 3. DATA PRODUK & KATALOG (REF GAMBAR BARU MANAJEMEN PRODUK & KATALOG)
+// =========================================================================
+const productSearchQuery = ref('');
+const selectedCategoryFilter = ref('all');
+const sortField = ref('name');
+const sortAsc = ref(true);
+const entriesPerPage = ref(10);
+const currentPage = ref(1);
+
+const isProductModalOpen = ref(false);
+const editingProduct = ref(null);
+const isProductViewModalOpen = ref(false);
+const viewingProduct = ref(null);
+
+const productForm = ref({
+  name: '',
+  sku: '',
+  category: 'Skincare',
+  normalPriceFormatted: 'Rp 320.000',
+  discountPriceFormatted: 'Rp 269.000',
+  stock: 45,
+  status: 'ACTIVE',
+  tglMasuk: '15-08-2026',
+  tglExpired: '15-08-2029',
+  image: '/images/categories/serum-conseler.png',
+});
+
+// Hitung otomatis masa berlaku dan status expired
+function calculateExpiry(expiredDateStr) {
+  if (!expiredDateStr) return { durationText: '-', statusExpired: 'SAFE' };
+  const parts = expiredDateStr.split('-');
+  if (parts.length !== 3) return { durationText: '-', statusExpired: 'SAFE' };
+
+  const expDay = parseInt(parts[0], 10);
+  const expMonth = parseInt(parts[1], 10) - 1;
+  const expYear = parseInt(parts[2], 10);
+  const expDate = new Date(expYear, expMonth, expDay);
+
+  const anchorDate = new Date(2026, 7, 15); // Anchor date: 15-08-2026
+  const diffTime = expDate - anchorDate;
+
+  if (diffTime <= 0) {
+    return { durationText: '0 Thn, 0 Bln, 0 Hari', statusExpired: 'EXPIRED' };
+  }
+
+  let years = expDate.getFullYear() - anchorDate.getFullYear();
+  let months = expDate.getMonth() - anchorDate.getMonth();
+  let days = expDate.getDate() - anchorDate.getDate();
+
+  if (days < 0) {
+    months -= 1;
+    const prevMonthDays = new Date(expDate.getFullYear(), expDate.getMonth(), 0).getDate();
+    days += prevMonthDays;
+  }
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+
+  const durationText = `${years} Thn, ${months} Bln, ${days} Hari`;
+
+  let statusExpired = 'SAFE';
+  if (years >= 2) {
+    statusExpired = 'SAFE';
+  } else if (years === 1) {
+    statusExpired = 'WARNING';
+  } else if (months >= 1 || days > 0) {
+    statusExpired = 'DANGER';
+  } else {
+    statusExpired = 'EXPIRED';
+  }
+
+  return { durationText, statusExpired };
+}
+
 const catalogProducts = ref([
   {
-    id: 'p1',
-    name: 'Koafy Crystal Butterbalm Duo',
-    brand: 'KOAFY BY HSK',
-    volume: '2 x 4.5g',
-    category: 'Lipbam',
-    price: 68,
-    originalPrice: 98,
-    discountPercent: 30,
-    hasShades: true,
-    stock: 24,
-    image: '/images/new-arrival-1.png',
-  },
-  {
-    id: 'p2',
-    name: 'HSK Secret Glow Cushion SPF 50',
-    brand: 'HSK SECRET',
-    volume: '15g + Refill',
-    category: 'Cushion',
-    price: 42,
-    originalPrice: 65,
-    discountPercent: 35,
-    hasShades: true,
-    stock: 8, // low
-    image: '/images/cat-cushion.png',
-  },
-  {
-    id: 'p3',
-    name: 'Koafy Velvet Lip & Brush Set',
-    brand: 'KOAFY BY HSK',
-    volume: '4.5g',
-    category: 'Lipbam',
-    price: 38,
-    originalPrice: 55,
-    discountPercent: 30,
-    hasShades: true,
-    stock: 18,
-    image: '/images/new-arrival-2.png',
-  },
-  {
-    id: 'p4',
-    name: 'Koafy Soft-Square Multi Balm Trio',
-    brand: 'KOAFY BEAUTY',
-    volume: '3 x 3.8g',
-    category: 'Lipbam',
-    price: 54,
-    originalPrice: 85,
-    discountPercent: 36,
-    hasShades: true,
-    stock: 12,
-    image: '/images/new-arrival-3.png',
-  },
-  {
-    id: 'p5',
-    name: 'Skin Barrier Calm Liquid Foundation',
-    brand: 'KOAFY LABS',
-    volume: '30 ml',
-    category: 'Liquid Pondation',
-    price: 48,
-    originalPrice: 70,
-    discountPercent: 31,
-    hasShades: true,
-    stock: 35,
-    image: '/images/cat-liquid-pondation.png',
-  },
-  {
-    id: 'p6',
-    name: 'Rose Hyaluronic Hydrating Cleanser',
-    brand: 'HSK SECRET',
-    volume: '120 ml',
-    category: 'Cleanser',
-    price: 28,
-    originalPrice: 40,
-    discountPercent: 30,
-    hasShades: false,
+    id: 'p-001',
+    name: 'Koafy Rose Hydrating Serum 50ml',
+    sku: 'KFY-SER-001',
+    category: 'Skincare',
+    normalPrice: 320000,
+    normalPriceFormatted: 'Rp 320.000',
+    discountPrice: 269000,
+    discountPriceFormatted: 'Rp 269.000',
     stock: 45,
-    image: '/images/cat-cleanser.png',
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '15-08-2029',
+    masaBerlaku: '3 Thn, 0 Bln, 0 Hari',
+    statusExpired: 'SAFE',
+    image: '/images/categories/serum-conseler.png',
+  },
+  {
+    id: 'p-002',
+    name: 'Skintific 5X Ceramide Barrier Moisture Gel 50g',
+    sku: 'SKN-GEL-002',
+    category: 'Skincare',
+    normalPrice: 189000,
+    normalPriceFormatted: 'Rp 189.000',
+    discountPrice: 149000,
+    discountPriceFormatted: 'Rp 149.000',
+    stock: 82,
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '15-08-2028',
+    masaBerlaku: '2 Thn, 0 Bln, 0 Hari',
+    statusExpired: 'SAFE',
+    image: '/images/banner-healthy-barrier.jpg',
+  },
+  {
+    id: 'p-003',
+    name: 'Rose All Day Velvet Lip Whip - Soft Mauve',
+    sku: 'RAD-LIP-003',
+    category: 'Makeup',
+    normalPrice: 129000,
+    normalPriceFormatted: 'Rp 129.000',
+    discountPrice: 99000,
+    discountPriceFormatted: 'Rp 99.000',
+    stock: 24,
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '15-08-2027',
+    masaBerlaku: '1 Thn, 0 Bln, 0 Hari',
+    statusExpired: 'WARNING',
+    image: '/images/product-lip-velvet.jpg',
+  },
+  {
+    id: 'p-004',
+    name: 'Somethinc Niacinamide + Moisture Sabi Beet Serum 20ml',
+    sku: 'SMT-SER-004',
+    category: 'Skincare',
+    normalPrice: 115000,
+    normalPriceFormatted: 'Rp 115.000',
+    discountPrice: 89000,
+    discountPriceFormatted: 'Rp 89.000',
+    stock: 5,
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '15-03-2027',
+    masaBerlaku: '0 Thn, 7 Bln, 0 Hari',
+    statusExpired: 'DANGER',
+    image: '/images/categories/serum-conseler.png',
+  },
+  {
+    id: 'p-005',
+    name: 'Laneige Water Sleeping Mask EX 70ml',
+    sku: 'LNG-MSK-005',
+    category: 'Skincare',
+    normalPrice: 450000,
+    normalPriceFormatted: 'Rp 450.000',
+    discountPrice: 385000,
+    discountPriceFormatted: 'Rp 385.000',
+    stock: 18,
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '15-08-2026',
+    masaBerlaku: '0 Thn, 0 Bln, 0 Hari',
+    statusExpired: 'EXPIRED',
+    image: '/images/categories/masker.png',
+  },
+  {
+    id: 'p-006',
+    name: 'COSRX Low pH Good Morning Gel Cleanser 150ml',
+    sku: 'COS-CLN-006',
+    category: 'Skincare',
+    normalPrice: 155000,
+    normalPriceFormatted: 'Rp 155.000',
+    discountPrice: 119000,
+    discountPriceFormatted: 'Rp 119.000',
+    stock: 60,
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '10-05-2026',
+    masaBerlaku: '0 Thn, 0 Bln, 0 Hari',
+    statusExpired: 'EXPIRED',
+    image: '/images/categories/cleanser.png',
+  },
+  {
+    id: 'p-007',
+    name: 'Koafy Botanical Hair Repair Oil 100ml',
+    sku: 'KFY-HIR-007',
+    category: 'Hair Care',
+    normalPrice: 249000,
+    normalPriceFormatted: 'Rp 249.000',
+    discountPrice: 215000,
+    discountPriceFormatted: 'Rp 215.000',
+    stock: 30,
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '01-12-2029',
+    masaBerlaku: '3 Thn, 3 Bln, 16 Hari',
+    statusExpired: 'SAFE',
+    image: '/images/product-butterbalm-1.jpg',
+  },
+  {
+    id: 'p-008',
+    name: 'Koafy Silk Glow Body Lotion 250ml',
+    sku: 'KFY-BDY-008',
+    category: 'Body Care',
+    normalPrice: 199000,
+    normalPriceFormatted: 'Rp 199.000',
+    discountPrice: 169000,
+    discountPriceFormatted: 'Rp 169.000',
+    stock: 40,
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '20-01-2027',
+    masaBerlaku: '0 Thn, 5 Bln, 5 Hari',
+    statusExpired: 'DANGER',
+    image: '/images/product-butterbalm-2.jpg',
   },
 ]);
+
+// Filter & Search Logic
+const filteredCatalogProducts = computed(() => {
+  let list = [...catalogProducts.value];
+
+  // 1. Search filter
+  const q = productSearchQuery.value.trim().toLowerCase();
+  if (q) {
+    list = list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+    );
+  }
+
+  // 2. Category filter
+  if (selectedCategoryFilter.value !== 'all') {
+    list = list.filter((p) => p.category === selectedCategoryFilter.value);
+  }
+
+  // 3. Sorting
+  const field = sortField.value;
+  const isAsc = sortAsc.value;
+  list.sort((a, b) => {
+    let valA = a[field];
+    let valB = b[field];
+
+    if (typeof valA === 'string') {
+      const cmp = valA.localeCompare(valB);
+      return isAsc ? cmp : -cmp;
+    }
+    return isAsc ? valA - valB : valB - valA;
+  });
+
+  return list;
+});
+
+// Pagination
+const totalPages = computed(() => {
+  return Math.ceil(filteredCatalogProducts.value.length / entriesPerPage.value) || 1;
+});
+
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * entriesPerPage.value;
+  return filteredCatalogProducts.value.slice(start, start + entriesPerPage.value);
+});
+
+const showingStart = computed(() => {
+  if (filteredCatalogProducts.value.length === 0) return 0;
+  return (currentPage.value - 1) * entriesPerPage.value + 1;
+});
+
+const showingEnd = computed(() => {
+  const end = currentPage.value * entriesPerPage.value;
+  return Math.min(end, filteredCatalogProducts.value.length);
+});
+
+function handleProductSort(field) {
+  if (sortField.value === field) {
+    sortAsc.value = !sortAsc.value;
+  } else {
+    sortField.value = field;
+    sortAsc.value = true;
+  }
+}
+
+function toggleProductActive(prod) {
+  prod.status = prod.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+  emit('toast', `Status produk ${prod.name} diubah menjadi ${prod.status}`);
+}
+
+function deleteCatalogProduct(prod) {
+  const idx = catalogProducts.value.findIndex((p) => p.id === prod.id);
+  if (idx > -1) {
+    catalogProducts.value.splice(idx, 1);
+    emit('toast', `Produk "${prod.name}" berhasil dihapus dari katalog!`);
+  }
+}
+
+function openAddProductModal() {
+  editingProduct.value = null;
+  productForm.value = {
+    name: '',
+    sku: `KFY-${Date.now().toString().slice(-4)}`,
+    category: 'Skincare',
+    normalPriceFormatted: 'Rp 200.000',
+    discountPriceFormatted: 'Rp 160.000',
+    stock: 20,
+    status: 'ACTIVE',
+    tglMasuk: '15-08-2026',
+    tglExpired: '15-08-2029',
+    image: '/images/categories/cleanser.png',
+  };
+  isProductModalOpen.value = true;
+}
+
+function openEditProductModal(prod) {
+  editingProduct.value = prod;
+  productForm.value = { ...prod };
+  isProductModalOpen.value = true;
+}
+
+function openViewProductModal(prod) {
+  viewingProduct.value = prod;
+  isProductViewModalOpen.value = true;
+}
+
+function saveProductForm() {
+  if (!productForm.value.name || !productForm.value.sku) return;
+
+  const expiryInfo = calculateExpiry(productForm.value.tglExpired);
+
+  // Parse numeric prices if needed for sorting
+  const numNormal = parseInt(productForm.value.normalPriceFormatted.replace(/[^0-9]/g, ''), 10) || 0;
+  const numDiscount = parseInt(productForm.value.discountPriceFormatted.replace(/[^0-9]/g, ''), 10) || 0;
+
+  if (editingProduct.value) {
+    Object.assign(editingProduct.value, {
+      ...productForm.value,
+      normalPrice: numNormal,
+      discountPrice: numDiscount,
+      masaBerlaku: expiryInfo.durationText,
+      statusExpired: expiryInfo.statusExpired,
+    });
+    emit('toast', `Data produk "${productForm.value.name}" berhasil diperbarui!`);
+  } else {
+    catalogProducts.value.unshift({
+      id: `p-${Date.now()}`,
+      ...productForm.value,
+      normalPrice: numNormal,
+      discountPrice: numDiscount,
+      masaBerlaku: expiryInfo.durationText,
+      statusExpired: expiryInfo.statusExpired,
+    });
+    emit('toast', `Produk baru "${productForm.value.name}" berhasil ditambahkan!`);
+  }
+
+  isProductModalOpen.value = false;
+}
 
 // 4. Data 6 Kategori
 const categoriesList = ref([

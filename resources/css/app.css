@@ -6417,3 +6417,418 @@ button {
     display: none;
   }
 }
+
+/* ==========================================================================
+   ADMIN MANAJEMEN PRODUK & KATALOG (REF GAMBAR BARU TABEL PRODUK)
+   ========================================================================== */
+
+.catalog-manage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #F3F4F6;
+  gap: 16px;
+}
+
+.header-admin-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 9999px;
+  padding: 5px 14px;
+}
+
+.admin-avatar-mini {
+  font-size: 14px;
+}
+
+.admin-pill-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+/* Controls Bar */
+.catalog-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 20px 0 16px 0;
+  flex-wrap: wrap;
+}
+
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-box-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-box-icon {
+  position: absolute;
+  left: 12px;
+  pointer-events: none;
+}
+
+.catalog-search-input {
+  height: 42px;
+  width: 240px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 0 14px 0 36px;
+  font-size: 13px;
+  color: #1F2937;
+  background-color: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.catalog-search-input:focus {
+  outline: none;
+  border-color: #D36279;
+  box-shadow: 0 0 0 3px rgba(211, 98, 121, 0.12);
+}
+
+.category-select-wrap {
+  position: relative;
+}
+
+.catalog-cat-select {
+  height: 42px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 13px;
+  color: #4B5563;
+  background-color: #FFFFFF;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.catalog-cat-select:focus {
+  border-color: #D36279;
+}
+
+.btn-add-product-pink {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: none;
+  background-color: #D36279;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(211, 98, 121, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-add-product-pink:hover {
+  background-color: #B84D63;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(211, 98, 121, 0.35);
+}
+
+/* Table Scroll and Styling */
+.catalog-table-scroll {
+  border: 1px solid #EAECEF;
+  border-radius: 14px;
+  overflow-x: auto;
+  background-color: #FFFFFF;
+}
+
+.catalog-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+  font-size: 12.5px;
+}
+
+.catalog-admin-table thead th {
+  background-color: #FAFAFB;
+  padding: 12px 14px;
+  font-weight: 700;
+  color: #374151;
+  text-align: left;
+  border-bottom: 1.5px solid #E5E7EB;
+  font-size: 12.5px;
+}
+
+.th-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.th-sortable:hover {
+  background-color: #F3F4F6;
+  color: #111827;
+}
+
+.sort-arrows {
+  display: inline-block;
+  margin-left: 4px;
+  color: #9CA3AF;
+  font-size: 11px;
+}
+
+.catalog-admin-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #F3F4F6;
+  vertical-align: middle;
+  color: #374151;
+}
+
+.catalog-admin-table tbody tr:hover {
+  background-color: #FFF9FA;
+}
+
+/* Row elements */
+.product-cell-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-product-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #E5E7EB;
+  background-color: #F9FAFB;
+  flex-shrink: 0;
+}
+
+.table-product-name {
+  font-weight: 600;
+  color: #111827;
+  max-width: 220px;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.sku-cell-text {
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.cat-cell-text {
+  color: #374151;
+  font-weight: 500;
+}
+
+.price-normal-cell {
+  color: #374151;
+  font-weight: 600;
+}
+
+.price-discount-cell {
+  color: #D36279;
+  font-weight: 700;
+}
+
+.stock-badge-cell {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.stock-badge-cell.safe {
+  color: #15803D;
+}
+
+.stock-badge-cell.danger {
+  color: #DC2626;
+}
+
+/* Status Active Pill */
+.btn-status-active-pill {
+  border: 1.5px solid #FBCFE8;
+  background-color: #FFF0F5;
+  color: #D36279;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 3px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-status-active-pill:hover {
+  background-color: #FCE7F3;
+}
+
+.btn-status-active-pill.inactive {
+  border-color: #E5E7EB;
+  background-color: #F3F4F6;
+  color: #9CA3AF;
+}
+
+.date-cell-text {
+  color: #4B5563;
+  font-size: 12px;
+}
+
+.remaining-cell-text {
+  color: #374151;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Expired Status Pill */
+.expired-status-pill {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.expired-status-pill.safe {
+  background-color: #DEF7EC;
+  color: #03543F;
+}
+
+.expired-status-pill.warning {
+  background-color: #FEF9C3;
+  color: #854D0E;
+}
+
+.expired-status-pill.danger {
+  background-color: #FFEDD5;
+  color: #9A3412;
+}
+
+.expired-status-pill.expired {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+/* Row Action Buttons (View, Edit, Delete) */
+.row-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+  background-color: #FFFFFF;
+  color: #6B7280;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.icon-action-btn.view:hover {
+  color: #2563EB;
+  border-color: #BFDBFE;
+  background-color: #EFF6FF;
+}
+
+.icon-action-btn.edit:hover {
+  color: #D97706;
+  border-color: #FDE68A;
+  background-color: #FEF9C3;
+}
+
+.icon-action-btn.delete:hover {
+  color: #DC2626;
+  border-color: #FECACA;
+  background-color: #FEE2E2;
+}
+
+/* Table Footer Pagination */
+.catalog-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 8px 6px 8px;
+  border-top: 1px solid #F3F4F6;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.footer-entries-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.entries-select {
+  height: 32px;
+  border: 1.2px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 0 8px;
+  font-size: 13px;
+  color: #1F2937;
+  background-color: #FFFFFF;
+  outline: none;
+  cursor: pointer;
+}
+
+.footer-showing-info {
+  font-size: 13px;
+  color: #4B5563;
+}
+
+.footer-pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pag-btn {
+  height: 32px;
+  min-width: 32px;
+  padding: 0 6px;
+  border: 1px solid #E5E7EB;
+  background-color: #FFFFFF;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.pag-btn:hover:not(:disabled) {
+  border-color: #D36279;
+  color: #D36279;
+  background-color: #FFF9FA;
+}
+
+.pag-btn.page-num.active {
+  background-color: #D36279;
+  border-color: #D36279;
+  color: #FFFFFF;
+}
+
+.pag-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
