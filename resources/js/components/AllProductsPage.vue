@@ -8,11 +8,11 @@
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
           </svg>
-          <span>Beranda</span>
+          <span>{{ t('navHome') }}</span>
         </button>
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item" :class="{ active: selectedCategory === 'all' && !selectedSubcategory }">
-          Semua Produk
+          {{ t('catalogBannerTitle') }}
         </span>
         <template v-if="selectedCategory !== 'all'">
           <span class="breadcrumb-separator">/</span>
@@ -31,18 +31,18 @@
       <!-- Page Banner / Header -->
       <div class="products-header-banner">
         <div class="banner-text-col">
-          <span class="banner-badge">KOAFY BEAUTY CATALOG</span>
+          <span class="banner-badge">{{ t('catalogBannerBadge') }}</span>
           <h1 class="banner-title">
             {{ currentHeaderTitle }}
           </h1>
           <p class="banner-subtitle">
-            Jelajahi formulasi premium kecantikan, riasan wajah bersertifikasi, dan perawatan kulit berkualitas tinggi dari Koafy by HSK Secret.
+            {{ t('catalogBannerSubtitle') }}
           </p>
         </div>
         <div class="banner-stats-col">
           <div class="banner-stat-chip">
             <span class="stat-number">{{ filteredProducts.length }}</span>
-            <span class="stat-label">Produk Tersedia</span>
+            <span class="stat-label">{{ t('productsText') }}</span>
           </div>
         </div>
       </div>
@@ -65,17 +65,17 @@
             <line x1="9" y1="8" x2="15" y2="8"></line>
             <line x1="17" y1="16" x2="23" y2="16"></line>
           </svg>
-          <span>Filter Pilihan</span>
+          <span>{{ t('filterChoices') }}</span>
           <span v-if="activeFilterCount > 0" class="filter-badge-count">{{ activeFilterCount }}</span>
         </button>
 
         <div class="mobile-sort-wrap">
           <select v-model="sortBy" class="sort-select-input" aria-label="Urutkan produk">
-            <option value="populer">Paling Populer</option>
-            <option value="terbaru">Produk Terbaru</option>
-            <option value="harga-rendah">Harga: Rendah ke Tinggi</option>
-            <option value="harga-tinggi">Harga: Tinggi ke Rendah</option>
-            <option value="rating">Rating Tertinggi</option>
+            <option value="populer">{{ t('sortPopular') }}</option>
+            <option value="terbaru">{{ t('sortNewest') }}</option>
+            <option value="harga-rendah">{{ t('sortPriceLowHigh') }}</option>
+            <option value="harga-tinggi">{{ t('sortPriceHighLow') }}</option>
+            <option value="rating">{{ t('sortRating') }}</option>
           </select>
         </div>
       </div>
@@ -117,7 +117,7 @@
                   <line x1="9" y1="8" x2="15" y2="8"></line>
                   <line x1="17" y1="16" x2="23" y2="16"></line>
                 </svg>
-                <h2 class="filter-title">Filter Pilihan</h2>
+                <h2 class="filter-title">{{ t('filterChoices') }}</h2>
               </div>
               <button
                 type="button"
@@ -131,13 +131,13 @@
 
             <!-- SECTION 1: Pencarian -->
             <div class="filter-section">
-              <label for="filter-search-input" class="filter-section-title">Pencarian</label>
+              <label for="filter-search-input" class="filter-section-title">{{ t('searchSection') }}</label>
               <div class="filter-input-wrap">
                 <input
                   id="filter-search-input"
                   v-model="searchKeyword"
                   type="text"
-                  placeholder="Cari kata kunci..."
+                  :placeholder="t('searchKeywordsPlaceholder')"
                   class="filter-search-input"
                 />
                 <button
@@ -153,7 +153,7 @@
 
             <!-- SECTION 2: Kategori (Gambar 1 + Makeup Subkategori Gambar 2) -->
             <div class="filter-section">
-              <h3 class="filter-section-title">Kategori</h3>
+              <h3 class="filter-section-title">{{ t('categorySection') }}</h3>
 
               <!-- Button Semua Kategori (Ref Gambar 1: soft pink background) -->
               <button
@@ -162,7 +162,7 @@
                 :class="{ active: selectedCategory === 'all' && !selectedSubcategory }"
                 @click="selectCategory('all')"
               >
-                <span>Semua Kategori</span>
+                <span>{{ t('allCategories') }}</span>
                 <span v-if="selectedCategory === 'all' && !selectedSubcategory" class="active-dot">●</span>
               </button>
 
@@ -199,7 +199,7 @@
                       :class="{ active: selectedCategory === 'makeup' && !selectedSubcategory }"
                       @click="selectCategory('makeup')"
                     >
-                      <span>Semua Makeup</span>
+                      <span>{{ t('allMakeup') }}</span>
                     </button>
 
                     <!-- Group 1: EYE (Gambar 2: Eyebrow, Eyeliner, Mascara, Eyeshadow) -->
@@ -380,7 +380,7 @@
                       :class="{ active: selectedCategory === 'skincare' && !selectedSubcategory }"
                       @click="selectCategory('skincare')"
                     >
-                      Semua Skincare
+                      <span>{{ t('allSkincare') }}</span>
                     </button>
                     <div class="group-items">
                       <button
@@ -442,7 +442,7 @@
                     :class="{ active: selectedCategory === 'body-care' }"
                     @click="toggleCategoryAccordion('body-care')"
                   >
-                    <span class="category-name-text">Perawatan Tubuh</span>
+                    <span class="category-name-text">{{ t('allBodyCare') }}</span>
                     <svg
                       class="accordion-chevron"
                       width="16"
@@ -462,7 +462,7 @@
                       :class="{ active: selectedCategory === 'body-care' && !selectedSubcategory }"
                       @click="selectCategory('body-care')"
                     >
-                      Semua Perawatan Tubuh
+                      <span>{{ t('allBodyCare') }}</span>
                     </button>
                     <div class="group-items">
                       <button
@@ -508,7 +508,7 @@
                     :class="{ active: selectedCategory === 'hair-care' }"
                     @click="toggleCategoryAccordion('hair-care')"
                   >
-                    <span class="category-name-text">Perawatan Rambut</span>
+                    <span class="category-name-text">{{ t('allHairCare') }}</span>
                     <svg
                       class="accordion-chevron"
                       width="16"
@@ -528,7 +528,7 @@
                       :class="{ active: selectedCategory === 'hair-care' && !selectedSubcategory }"
                       @click="selectCategory('hair-care')"
                     >
-                      Semua Perawatan Rambut
+                      <span>{{ t('allHairCare') }}</span>
                     </button>
                     <div class="group-items">
                       <button
@@ -572,7 +572,7 @@
 
             <!-- SECTION 3: Tipe Kulit (Ref Gambar 1) -->
             <div class="filter-section">
-              <h3 class="filter-section-title">Tipe Kulit</h3>
+              <h3 class="filter-section-title">{{ t('skinTypeSection') }}</h3>
               <div class="skin-types-grid">
                 <button
                   v-for="st in skinTypesList"
@@ -597,7 +597,7 @@
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
-                <span>Reset Filter</span>
+                <span>{{ t('resetFilterBtn') }}</span>
               </button>
             </div>
 
@@ -613,7 +613,7 @@
           <div class="catalog-top-bar">
             <div class="top-bar-left">
               <span class="results-count-text">
-                Menampilkan <strong>{{ filteredProducts.length }}</strong> Produk
+                {{ t('showingText') }} <strong>{{ filteredProducts.length }}</strong> {{ t('productsText') }}
               </span>
 
               <!-- Active Filter Chips -->
@@ -631,19 +631,19 @@
                   class="clear-all-chips-btn"
                   @click="resetAllFilters"
                 >
-                  Hapus Semua
+                  {{ t('resetFilterBtn') }}
                 </button>
               </div>
             </div>
 
             <div class="top-bar-right desktop-sort-wrap">
-              <span class="sort-label">Urutkan:</span>
+              <span class="sort-label">{{ t('sortByLabel') }}</span>
               <select v-model="sortBy" class="sort-select-input" aria-label="Urutkan produk">
-                <option value="populer">Paling Populer</option>
-                <option value="terbaru">Produk Terbaru</option>
-                <option value="harga-rendah">Harga: Rendah ke Tinggi</option>
-                <option value="harga-tinggi">Harga: Tinggi ke Rendah</option>
-                <option value="rating">Rating Tertinggi</option>
+                <option value="populer">{{ t('sortPopular') }}</option>
+                <option value="terbaru">{{ t('sortNewest') }}</option>
+                <option value="harga-rendah">{{ t('sortPriceLowHigh') }}</option>
+                <option value="harga-tinggi">{{ t('sortPriceHighLow') }}</option>
+                <option value="rating">{{ t('sortRating') }}</option>
               </select>
             </div>
           </div>
@@ -726,7 +726,7 @@
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
                     </svg>
-                    <span>+ Keranjang</span>
+                    <span>{{ t('addToCart') }}</span>
                   </button>
                   <button
                     type="button"
@@ -744,9 +744,9 @@
           <!-- Empty State: No Products Match Filter -->
           <div v-else class="catalog-empty-state">
             <div class="empty-icon-circle">🔍</div>
-            <h3 class="empty-state-title">Produk Tidak Ditemukan</h3>
+            <h3 class="empty-state-title">{{ t('noProductFoundTitle') }}</h3>
             <p class="empty-state-desc">
-              Tidak ada produk yang sesuai dengan kriteria filter atau kata kunci "{{ searchKeyword }}". Silakan reset filter untuk melihat seluruh koleksi.
+              {{ t('noProductFoundDesc') }}
             </p>
             <button
               type="button"
@@ -754,7 +754,7 @@
               style="padding: 10px 24px; border-radius: 10px; font-size: 14px;"
               @click="resetAllFilters"
             >
-              Reset Semua Filter
+              {{ t('resetAllFilterBtn') }}
             </button>
           </div>
 
@@ -767,6 +767,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { t } from '../i18n.js';
 
 const props = defineProps({
   wishlistIds: {
@@ -1451,11 +1452,11 @@ const currentHeaderTitle = computed(() => {
   if (selectedSubcategory.value) {
     return `${selectedSubcategory.value} Koafy`;
   }
-  if (selectedCategory.value === 'makeup') return 'Katalog Makeup Koafy';
-  if (selectedCategory.value === 'skincare') return 'Katalog Skincare Koafy';
-  if (selectedCategory.value === 'body-care') return 'Katalog Perawatan Tubuh';
-  if (selectedCategory.value === 'hair-care') return 'Katalog Perawatan Rambut';
-  return 'Semua Koleksi Produk';
+  if (selectedCategory.value === 'makeup') return t('allMakeup');
+  if (selectedCategory.value === 'skincare') return t('allSkincare');
+  if (selectedCategory.value === 'body-care') return t('allBodyCare');
+  if (selectedCategory.value === 'hair-care') return t('allHairCare');
+  return t('catalogBannerTitle');
 });
 
 // Category Names lookup
@@ -1463,8 +1464,8 @@ function getCategoryName(catId) {
   const map = {
     makeup: 'Makeup',
     skincare: 'Skincare',
-    'body-care': 'Perawatan Tubuh',
-    'hair-care': 'Perawatan Rambut',
+    'body-care': t('allBodyCare'),
+    'hair-care': t('allHairCare'),
   };
   return map[catId] || catId;
 }

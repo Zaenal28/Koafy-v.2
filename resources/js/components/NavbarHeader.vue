@@ -5,16 +5,16 @@
   <div class="announcement-bar">
     <div class="marquee-track">
       <div class="marquee-group">
-        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
-        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
-        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
-        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
+        <span class="marquee-item">{{ t('announcement') }}</span>
+        <span class="marquee-item">{{ t('announcement') }}</span>
+        <span class="marquee-item">{{ t('announcement') }}</span>
+        <span class="marquee-item">{{ t('announcement') }}</span>
       </div>
       <div class="marquee-group" aria-hidden="true">
-        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
-        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
-        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
-        <span class="marquee-item">Dapatkan gratis ongkos kirim (ongkir) untuk pembelian di atas 200 RIBU</span>
+        <span class="marquee-item">{{ t('announcement') }}</span>
+        <span class="marquee-item">{{ t('announcement') }}</span>
+        <span class="marquee-item">{{ t('announcement') }}</span>
+        <span class="marquee-item">{{ t('announcement') }}</span>
       </div>
     </div>
   </div>
@@ -61,7 +61,7 @@
           :class="{ active: activeNav === 'home' }"
           @click.prevent="selectNav('home')"
         >
-          Home
+          {{ t('navHome') }}
         </a>
         <a
           href="#shop-all"
@@ -69,7 +69,7 @@
           :class="{ active: activeNav === 'shop-all' }"
           @click.prevent="selectNav('shop-all')"
         >
-          Shop All
+          {{ t('navShopAll') }}
         </a>
         <a
           href="#our-story"
@@ -77,7 +77,7 @@
           :class="{ active: activeNav === 'our-story' }"
           @click.prevent="selectNav('our-story')"
         >
-          Our Story
+          {{ t('navOurStory') }}
         </a>
 
         <div
@@ -94,21 +94,21 @@
             :aria-expanded="isPagesOpen ? 'true' : 'false'"
             @click.stop="togglePagesDropdown"
           >
-            <span>Pages</span>
+            <span>{{ t('navPages') }}</span>
             <svg class="chevron-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
           </button>
           <div class="dropdown-menu">
-            <a href="#about" class="dropdown-link" @click.prevent="handleSubnav('About Us')">About Us</a>
-            <a href="#ingredients" class="dropdown-link" @click.prevent="handleSubnav('Ingredients')">Ingredients</a>
-            <a href="#faq" class="dropdown-link" @click.prevent="handleSubnav('FAQ')">FAQ</a>
-            <a href="#contact" class="dropdown-link" @click.prevent="handleSubnav('Contact')">Contact</a>
+            <a href="#about" class="dropdown-link" @click.prevent="handleSubnav(t('aboutUs'))">{{ t('aboutUs') }}</a>
+            <a href="#ingredients" class="dropdown-link" @click.prevent="handleSubnav(t('ingredients'))">{{ t('ingredients') }}</a>
+            <a href="#faq" class="dropdown-link" @click.prevent="handleSubnav(t('faq'))">{{ t('faq') }}</a>
+            <a href="#contact" class="dropdown-link" @click.prevent="handleSubnav(t('contact'))">{{ t('contact') }}</a>
           </div>
         </div>
       </nav>
 
-      <!-- RIGHT: Search -> Love/Wishlist (2) -> Shopping Bag (3) -> User Profile -->
+      <!-- RIGHT: Search -> Language Switcher -> Love/Wishlist -> Shopping Bag -> User Profile -->
       <div class="header-utilities">
         <!-- 1. Search Icon -->
         <button
@@ -124,7 +124,115 @@
           </svg>
         </button>
 
-        <!-- 2. Love / Wishlist Icon (Before Cart) -->
+        <!-- Language Selector Pill & Dropdown (Immediately after Search) -->
+        <div ref="langDropdownRef" class="lang-dropdown-wrapper">
+          <button
+            type="button"
+            class="lang-pill-btn"
+            :class="{ active: isLangOpen }"
+            aria-label="Select Language"
+            @click.stop="isLangOpen = !isLangOpen"
+          >
+            <!-- Circular Flag Icon -->
+            <span class="flag-icon-wrap">
+              <svg v-if="currentLang === 'id'" viewBox="0 0 24 24" width="18" height="18" class="flag-icon-svg">
+                <rect width="24" height="12" fill="#E11D48"/>
+                <rect y="12" width="24" height="12" fill="#FFFFFF"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" width="18" height="18" class="flag-icon-svg">
+                <defs><clipPath id="us-clip-nav"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+                <g clip-path="url(#us-clip-nav)">
+                  <rect width="24" height="24" fill="#B22234"/>
+                  <rect y="1.85" width="24" height="1.85" fill="#FFFFFF"/>
+                  <rect y="5.54" width="24" height="1.85" fill="#FFFFFF"/>
+                  <rect y="9.23" width="24" height="1.85" fill="#FFFFFF"/>
+                  <rect y="12.92" width="24" height="1.85" fill="#FFFFFF"/>
+                  <rect y="16.61" width="24" height="1.85" fill="#FFFFFF"/>
+                  <rect y="20.30" width="24" height="1.85" fill="#FFFFFF"/>
+                  <rect width="11" height="13" fill="#3C3B6E"/>
+                  <circle cx="3" cy="3" r="0.8" fill="#FFF"/>
+                  <circle cx="6" cy="3" r="0.8" fill="#FFF"/>
+                  <circle cx="9" cy="3" r="0.8" fill="#FFF"/>
+                  <circle cx="4.5" cy="5.5" r="0.8" fill="#FFF"/>
+                  <circle cx="7.5" cy="5.5" r="0.8" fill="#FFF"/>
+                  <circle cx="3" cy="8" r="0.8" fill="#FFF"/>
+                  <circle cx="6" cy="8" r="0.8" fill="#FFF"/>
+                  <circle cx="9" cy="8" r="0.8" fill="#FFF"/>
+                  <circle cx="4.5" cy="10.5" r="0.8" fill="#FFF"/>
+                  <circle cx="7.5" cy="10.5" r="0.8" fill="#FFF"/>
+                </g>
+              </svg>
+            </span>
+            <span class="lang-code-text">{{ currentLang.toUpperCase() }}</span>
+            <svg class="lang-chevron-icon" :class="{ rotate: isLangOpen }" viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+            </svg>
+          </button>
+
+          <!-- Dropdown Card -->
+          <div v-if="isLangOpen" class="lang-dropdown-menu">
+            <button
+              type="button"
+              class="lang-option-item"
+              :class="{ selected: currentLang === 'id' }"
+              @click="chooseLanguage('id')"
+            >
+              <div class="lang-option-content">
+                <span class="flag-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="20" height="20" class="flag-icon-svg">
+                    <rect width="24" height="12" fill="#E11D48"/>
+                    <rect y="12" width="24" height="12" fill="#FFFFFF"/>
+                  </svg>
+                </span>
+                <span class="lang-option-label">Bahasa Indonesia</span>
+              </div>
+              <svg v-if="currentLang === 'id'" class="lang-check-icon" viewBox="0 0 20 20" fill="#F51487" width="16" height="16">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              class="lang-option-item"
+              :class="{ selected: currentLang === 'en' }"
+              @click="chooseLanguage('en')"
+            >
+              <div class="lang-option-content">
+                <span class="flag-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="20" height="20" class="flag-icon-svg">
+                    <defs><clipPath id="us-clip-opt"><circle cx="12" cy="12" r="12"/></clipPath></defs>
+                    <g clip-path="url(#us-clip-opt)">
+                      <rect width="24" height="24" fill="#B22234"/>
+                      <rect y="1.85" width="24" height="1.85" fill="#FFFFFF"/>
+                      <rect y="5.54" width="24" height="1.85" fill="#FFFFFF"/>
+                      <rect y="9.23" width="24" height="1.85" fill="#FFFFFF"/>
+                      <rect y="12.92" width="24" height="1.85" fill="#FFFFFF"/>
+                      <rect y="16.61" width="24" height="1.85" fill="#FFFFFF"/>
+                      <rect y="20.30" width="24" height="1.85" fill="#FFFFFF"/>
+                      <rect width="11" height="13" fill="#3C3B6E"/>
+                      <circle cx="3" cy="3" r="0.8" fill="#FFF"/>
+                      <circle cx="6" cy="3" r="0.8" fill="#FFF"/>
+                      <circle cx="9" cy="3" r="0.8" fill="#FFF"/>
+                      <circle cx="4.5" cy="5.5" r="0.8" fill="#FFF"/>
+                      <circle cx="7.5" cy="5.5" r="0.8" fill="#FFF"/>
+                      <circle cx="3" cy="8" r="0.8" fill="#FFF"/>
+                      <circle cx="6" cy="8" r="0.8" fill="#FFF"/>
+                      <circle cx="9" cy="8" r="0.8" fill="#FFF"/>
+                      <circle cx="4.5" cy="10.5" r="0.8" fill="#FFF"/>
+                      <circle cx="7.5" cy="10.5" r="0.8" fill="#FFF"/>
+                    </g>
+                  </svg>
+                </span>
+                <span class="lang-option-label">English</span>
+              </div>
+              <svg v-if="currentLang === 'en'" class="lang-check-icon" viewBox="0 0 20 20" fill="#F51487" width="16" height="16">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Love / Wishlist Icon (After Language Pill) -->
         <button
           id="wishlist-btn"
           type="button"
@@ -181,7 +289,7 @@
               style="background-color: var(--koafy-pink-soft); color: var(--koafy-pink); font-weight: 700; border-radius: 8px; margin-bottom: 6px;"
               @click="handleAuthClick"
             >
-              <span>Masuk / Daftar Akun</span>
+              <span>{{ t('authMenu') }}</span>
               <span>&rsaquo;</span>
             </button>
             <button
@@ -190,23 +298,23 @@
               style="background-color: #FFF0F4; color: #D36279; font-weight: 700; border-radius: 8px; margin-bottom: 6px;"
               @click="handleAdminClick"
             >
-              <span>⚙️ Panel Admin Toko</span>
+              <span>{{ t('adminPanel') }}</span>
               <span>&rsaquo;</span>
             </button>
-            <button type="button" class="profile-menu-link" @click="triggerProfileToast('Membuka halaman My Profile')">
-              <span>My Profile</span>
+            <button type="button" class="profile-menu-link" @click="triggerProfileToast(t('myProfile'))">
+              <span>{{ t('myProfile') }}</span>
               <span>&rsaquo;</span>
             </button>
-            <button type="button" class="profile-menu-link" @click="triggerProfileToast('Membuka riwayat My Orders')">
-              <span>My Orders</span>
+            <button type="button" class="profile-menu-link" @click="triggerProfileToast(t('myOrders'))">
+              <span>{{ t('myOrders') }}</span>
               <span style="color:#F51487;font-weight:700;font-size:11px;">2 Active</span>
             </button>
-            <button type="button" class="profile-menu-link" @click="triggerProfileToast(`Anda memiliki ${claimedVouchersCount} voucher aktif`)">
-              <span>My Claimed Vouchers</span>
+            <button type="button" class="profile-menu-link" @click="triggerProfileToast(`${t('claimedVouchers')}: ${claimedVouchersCount}`)">
+              <span>{{ t('claimedVouchers') }}</span>
               <span id="profile-voucher-count" style="color:#F51487;font-weight:700;font-size:11px;">{{ claimedVouchersCount }}</span>
             </button>
-            <button type="button" class="profile-menu-link" @click="triggerProfileToast('Membuka pengaturan akun')">
-              <span>Account Settings</span>
+            <button type="button" class="profile-menu-link" @click="triggerProfileToast(t('accountSettings'))">
+              <span>{{ t('accountSettings') }}</span>
               <span>&rsaquo;</span>
             </button>
           </div>
@@ -226,10 +334,10 @@
           ref="searchInputRef"
           v-model="searchQuery"
           type="text"
-          placeholder="Cari Koafy Lip Velvet, Crystal Butterbalm, atau Soft-Square Trio..."
+          :placeholder="t('searchPlaceholder')"
           @keydown.enter="submitSearch"
         />
-        <button id="search-close" type="button" class="search-close" @click="closeSearch">Tutup</button>
+        <button id="search-close" type="button" class="search-close" @click="closeSearch">{{ t('searchClose') }}</button>
       </div>
     </div>
   </header>
@@ -237,6 +345,7 @@
 
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted } from 'vue';
+import { currentLang, setLanguage, t } from '../i18n.js';
 
 defineProps({
   activeNav: {
@@ -263,11 +372,19 @@ const isScrolled = ref(false);
 const isPagesOpen = ref(false);
 const isProfileOpen = ref(false);
 const isSearchOpen = ref(false);
+const isLangOpen = ref(false);
 const searchQuery = ref('');
 
 const pagesDropdownRef = ref(null);
 const profileWrapperRef = ref(null);
+const langDropdownRef = ref(null);
 const searchInputRef = ref(null);
+
+function chooseLanguage(lang) {
+  setLanguage(lang);
+  isLangOpen.value = false;
+  emit('toast', lang === 'id' ? 'Bahasa berhasil diubah ke Bahasa Indonesia' : 'Language switched to English');
+}
 
 function handleAuthClick() {
   isProfileOpen.value = false;
@@ -330,6 +447,9 @@ function handleDocumentClick(e) {
   }
   if (profileWrapperRef.value && !profileWrapperRef.value.contains(e.target)) {
     isProfileOpen.value = false;
+  }
+  if (langDropdownRef.value && !langDropdownRef.value.contains(e.target)) {
+    isLangOpen.value = false;
   }
 }
 

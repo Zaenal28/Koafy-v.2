@@ -14,10 +14,10 @@
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
           </svg>
-          <span>Kembali ke Beranda</span>
+          <span>{{ t('backToHome') }}</span>
         </button>
         <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-item">Katalog Produk</span>
+        <span class="breadcrumb-item">{{ t('productCatalogBreadcrumb') }}</span>
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">{{ currentProduct.name }}</span>
       </nav>
@@ -147,7 +147,7 @@
 
           <!-- Size / Volume Options -->
           <div class="detail-size-section">
-            <span class="detail-size-title">Pilihan Ukuran / Kemasan:</span>
+            <span class="detail-size-title">{{ t('selectSizeLabel') }}:</span>
             <div class="detail-sizes-row">
               <button
                 v-for="size in sizes"
@@ -164,7 +164,7 @@
 
           <!-- Quantity Selector & Stock Info -->
           <div class="detail-qty-row">
-            <span class="detail-qty-label">Jumlah:</span>
+            <span class="detail-qty-label">{{ t('quantityLabel') }}:</span>
             <div class="detail-qty-counter">
               <button
                 type="button"
@@ -205,7 +205,7 @@
               <svg width="20" height="20" :fill="isFavorite ? '#F51487' : 'none'" :stroke="isFavorite ? '#F51487' : 'currentColor'" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
               </svg>
-              <span>{{ isFavorite ? 'Sudah Ada di Favorit' : 'Tambahkan ke Favorit' }}</span>
+              <span>{{ isFavorite ? (currentLang === 'en' ? 'Saved in Wishlist' : 'Sudah Ada di Favorit') : t('addFavoriteBtn') }}</span>
             </button>
 
             <!-- Row 2: Tambah ke Cart & Beli Sekarang -->
@@ -218,7 +218,7 @@
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
                 </svg>
-                <span>Tambah ke Cart</span>
+                <span>{{ t('addToCart') }}</span>
               </button>
 
               <button
@@ -226,7 +226,7 @@
                 class="btn-buy-now-solid"
                 @click="handleBuyNow"
               >
-                <span>Beli Sekarang</span>
+                <span>{{ t('buyNow') }}</span>
               </button>
             </div>
           </div>
@@ -271,7 +271,7 @@
             :class="{ active: activeTab === 'description' }"
             @click="activeTab = 'description'"
           >
-            Description
+            {{ currentLang === 'en' ? 'Description' : 'Deskripsi' }}
           </button>
           <button
             type="button"
@@ -279,7 +279,7 @@
             :class="{ active: activeTab === 'info' }"
             @click="activeTab = 'info'"
           >
-            Additional Information
+            {{ currentLang === 'en' ? 'Additional Information' : 'Informasi Tambahan' }}
           </button>
           <button
             type="button"
@@ -287,7 +287,7 @@
             :class="{ active: activeTab === 'reviews' }"
             @click="activeTab = 'reviews'"
           >
-            Review (245)
+            {{ currentLang === 'en' ? 'Reviews' : 'Ulasan' }} (245)
           </button>
         </div>
 
@@ -393,6 +393,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { currentLang, t } from '../i18n.js';
 
 const props = defineProps({
   product: {

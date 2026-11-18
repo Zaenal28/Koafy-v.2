@@ -14,11 +14,11 @@
     id="wishlist-drawer"
     class="side-drawer right"
     :class="{ open: activeDrawer === 'wishlist' }"
-    aria-label="Favorite Items"
+    :aria-label="t('favoriteItemsTitle')"
   >
     <div class="drawer-header">
       <div class="drawer-title-group">
-        <span>Favorite Items</span>
+        <span>{{ t('favoriteItemsTitle') }}</span>
         <span id="wishlist-drawer-count" class="badge-pill" style="position:static;">{{ wishlistItems.length }}</span>
       </div>
       <button type="button" class="icon-btn" aria-label="Tutup" @click="$emit('close-drawers')">✕</button>
@@ -29,7 +29,7 @@
         v-if="wishlistItems.length === 0"
         style="text-align:center;color:#6B7280;padding:32px 0;font-size:14px;"
       >
-        Belum ada produk favorit.
+        {{ t('emptyWishlist') }}
       </p>
 
       <div
@@ -48,7 +48,7 @@
               style="font-size:12px;font-weight:700;color:#F51487;"
               @click="$emit('move-to-cart', item.id)"
             >
-              + Move to Bag
+              {{ t('addToCart') }}
             </button>
           </div>
         </div>
@@ -62,7 +62,7 @@
         class="primary-Pink-btn"
         @click="$emit('move-all-to-cart')"
       >
-        Move All Favorites to Bag
+        {{ t('moveAllToCartBtn') }}
       </button>
     </div>
   </aside>
@@ -72,11 +72,11 @@
     id="cart-drawer"
     class="side-drawer right"
     :class="{ open: activeDrawer === 'cart' }"
-    aria-label="Shopping Bag"
+    :aria-label="t('shoppingBagTitle')"
   >
     <div class="drawer-header">
       <div class="drawer-title-group">
-        <span>Your Shopping Bag</span>
+        <span>{{ t('shoppingBagTitle') }}</span>
         <span id="cart-drawer-count" class="badge-pill" style="position:static;">{{ cartTotalQty }}</span>
       </div>
       <button type="button" class="icon-btn" aria-label="Tutup" @click="$emit('close-drawers')">✕</button>
@@ -87,7 +87,7 @@
         v-if="cartItems.length === 0"
         style="text-align:center;color:#6B7280;padding:32px 0;font-size:14px;"
       >
-        Keranjang belanja Anda masih kosong.
+        {{ t('emptyCart') }}
       </p>
 
       <div
@@ -125,7 +125,7 @@
 
     <div class="drawer-footer">
       <div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280;margin-bottom:6px;">
-        <span>Voucher Discount</span>
+        <span>{{ t('discountCouponLabel') }}</span>
         <span id="cart-discount-label" style="color:#F51487;font-weight:700;">
           {{ discountLabel }}
         </span>
@@ -139,7 +139,7 @@
         class="primary-Pink-btn"
         @click="$emit('checkout')"
       >
-        Proceed to Checkout
+        {{ t('checkoutBtn') }}
       </button>
     </div>
   </aside>
@@ -166,7 +166,7 @@
         :class="{ active: activeNav === 'home' }"
         @click.prevent="selectMobileNav('home')"
       >
-        Home
+        {{ t('navHome') }}
       </a>
       <a
         href="#shop-all"
@@ -174,7 +174,7 @@
         :class="{ active: activeNav === 'shop-all' }"
         @click.prevent="selectMobileNav('shop-all')"
       >
-        Shop All
+        {{ t('navShopAll') }}
       </a>
       <a
         href="#our-story"
@@ -182,7 +182,7 @@
         :class="{ active: activeNav === 'our-story' }"
         @click.prevent="selectMobileNav('our-story')"
       >
-        Our Story
+        {{ t('navOurStory') }}
       </a>
       <a
         href="#pages"
@@ -190,7 +190,7 @@
         :class="{ active: activeNav === 'pages' }"
         @click.prevent="selectMobileNav('pages')"
       >
-        Pages
+        {{ t('navPages') }}
       </a>
       <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #F3F4F6; display: flex; flex-direction: column; gap: 8px;">
         <button
@@ -199,7 +199,7 @@
           style="width: 100%; height: 42px; font-size: 13.5px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;"
           @click="openAuthFromMobile"
         >
-          <span>👤 Masuk / Daftar</span>
+          <span>👤 {{ t('authMenu') }}</span>
         </button>
         <button
           type="button"
@@ -207,18 +207,19 @@
           style="width: 100%; height: 40px; font-size: 13px; font-weight: 700; color: #D36279; border-color: rgba(211, 98, 121, 0.3); background-color: #FFF0F4; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;"
           @click="openAdminFromMobile"
         >
-          <span>⚙️ Panel Admin Toko</span>
+          <span>{{ t('adminPanel') }}</span>
         </button>
       </div>
     </div>
     <div class="drawer-footer" style="font-size:12px;color:#6B7280;">
-      <strong>Koafy by HSK Secret</strong> &bull; Gratis ongkir pembelian di atas 200 RIBU
+      <strong>Koafy by HSK Secret</strong> &bull; {{ t('announcement') }}
     </div>
   </aside>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import { t } from '../i18n.js';
 
 const props = defineProps({
   activeDrawer: {

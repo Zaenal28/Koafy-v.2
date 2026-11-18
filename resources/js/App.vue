@@ -43,6 +43,11 @@
           @toggle-favorite="toggleFavorite"
           @view-all="openProductsPage('all')"
         />
+
+        <!-- SECTION CONTENT KOAFY MAKEUP (DIBAWAH NEW ARRIVAL SESUAI REQUEST) -->
+        <KoafyMakeupStorySection
+          @explore-makeup="openProductsPage('makeup')"
+        />
       </template>
 
       <!-- 2. ALL PRODUCTS / SHOP ALL CATALOG VIEW (Ref Gambar 1 & Gambar 2) -->
@@ -117,6 +122,12 @@
       @checkout="handleCheckout"
     />
 
+    <!-- Floating WhatsApp Chat CS Admin (Only on E-Commerce Storefront, hidden on admin) -->
+    <FloatingWhatsAppChat
+      v-if="currentView !== 'admin'"
+      @toast="showToast"
+    />
+
     <!-- Toast Feedback -->
     <div id="koafy-toast" class="koafy-toast" :class="{ show: toastVisible }">
       {{ toastMessage }}
@@ -137,6 +148,8 @@ import SideDrawers from './components/SideDrawers.vue';
 import AuthPage from './components/AuthPage.vue';
 import AdminDashboard from './components/AdminDashboard.vue';
 import AllProductsPage from './components/AllProductsPage.vue';
+import FloatingWhatsAppChat from './components/FloatingWhatsAppChat.vue';
+import KoafyMakeupStorySection from './components/KoafyMakeupStorySection.vue';
 
 const activeNav = ref('home');
 const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin'

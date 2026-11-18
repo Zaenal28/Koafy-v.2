@@ -19,12 +19,12 @@
             <span class="flash-lightning-icon">⚡</span>
             <span class="flash-sale-3d-text">FLASH SALE</span>
           </div>
-          <span class="flash-sale-tagline">Diskon Kilat Terbatas &bull; Hemat Ekstra</span>
+          <span class="flash-sale-tagline">{{ t('flashTagline') }}</span>
         </div>
 
         <!-- Countdown Timer: "Akan berakhir dalam [ 21 : 57 : 59 ]" (Ref Image 2) -->
         <div class="flash-sale-timer-block">
-          <span class="timer-label">Akan berakhir dalam</span>
+          <span class="timer-label">{{ t('endsIn') }}</span>
           <div class="timer-display-pill">
             <span class="timer-icon">⏱</span>
             <div class="timer-digits-wrap">
@@ -92,8 +92,8 @@
               class="banner-shop-now-btn"
               @click="$emit('view-all')"
             >
-              <span>SHOP NOW</span>
-              <small>*Limited Stock</small>
+              <span>{{ t('shopNowBtn') }}</span>
+              <small>*{{ t('limitedStock') }}</small>
             </button>
           </div>
 
@@ -174,7 +174,7 @@
                     ></div>
                   </div>
                   <span class="flash-stock-text">
-                    🔥 Terjual {{ item.soldPercent }}% &bull; Sisa {{ item.stockLeft }} pcs
+                    🔥 {{ t('soldText') }} {{ item.soldPercent }}% &bull; {{ t('leftText') }} {{ item.stockLeft }} pcs
                   </span>
                 </div>
 
@@ -184,7 +184,7 @@
                   class="btn-lihat-produk"
                   @click="$emit('view-detail', item)"
                 >
-                  Lihat Produk
+                  {{ t('viewProduct') }}
                 </button>
               </div>
             </article>
@@ -199,6 +199,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { t } from '../i18n.js';
 
 const props = defineProps({
   wishlistIds: {
