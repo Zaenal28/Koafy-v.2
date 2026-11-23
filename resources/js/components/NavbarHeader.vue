@@ -486,7 +486,11 @@ function togglePagesDropdown() {
 
 function handleSubnav(pageTitle) {
   isPagesOpen.value = false;
-  emit('toast', `Membuka halaman ${pageTitle}`);
+  if (pageTitle === t('aboutUs')) {
+    selectNav('our-story');
+  } else {
+    emit('toast', `Membuka halaman ${pageTitle}`);
+  }
 }
 
 function toggleSearch() {

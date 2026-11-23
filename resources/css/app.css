@@ -837,9 +837,9 @@ button {
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(28, 8, 18, 0.38);
+  background: rgba(28, 8, 18, 0.45);
   backdrop-filter: blur(3px);
-  z-index: 80;
+  z-index: 1000;
   opacity: 0;
   visibility: hidden;
   transition: all 0.28s ease;
@@ -857,11 +857,11 @@ button {
   width: 390px;
   max-width: 90vw;
   background: var(--white);
-  z-index: 90;
+  z-index: 1010;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -5070,12 +5070,113 @@ button {
   }
 
   .flash-promo-banner-card {
-    min-height: 280px;
-    padding: 22px 18px;
+    min-height: 230px;
+    background: linear-gradient(105deg, #2D101C 0%, #4A192D 48%, #C7436E 100%);
+    position: relative;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .flash-banner-bg-img {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: 48%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: brightness(1);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) 18%, black 100%);
+    mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) 18%, black 100%);
+    z-index: 1;
+  }
+
+  .flash-banner-overlay-content {
+    position: relative;
+    z-index: 2;
+    width: 56%;
+    max-width: 260px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    height: 100%;
+  }
+
+  .banner-brand-chip {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    width: fit-content;
+  }
+
+  .banner-chip-logo {
+    height: 16px;
+  }
+
+  .banner-text-block {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+  }
+
+  .banner-sub-badge {
+    font-size: 8.5px;
+    padding: 2.5px 7px;
+    margin-bottom: 4px;
+    background-color: var(--koafy-pink);
+    color: #FFFFFF;
+    border-radius: 6px;
+    display: inline-block;
   }
 
   .banner-main-headline {
-    font-size: 24px;
+    font-size: 19px;
+    line-height: 1.15;
+    margin: 0 0 6px 0;
+    color: #FFFFFF;
+  }
+
+  .banner-discount-box {
+    display: inline-flex;
+    padding: 3px 9px;
+    border-radius: 8px;
+    gap: 6px;
+    background: #FFFFFF;
+  }
+
+  .disc-label {
+    font-size: 9.5px;
+  }
+
+  .disc-number {
+    font-size: 18px;
+  }
+
+  .banner-shop-now-btn {
+    width: fit-content;
+    padding: 8px 16px;
+    border-radius: 999px;
+    flex-direction: row;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .banner-shop-now-btn span {
+    font-size: 12px;
+  }
+
+  .banner-shop-now-btn small {
+    display: none;
   }
 
   .flash-sale-header {
@@ -5100,6 +5201,62 @@ button {
 
   .flash-sale-container {
     padding: 0 14px;
+  }
+
+  .flash-promo-banner-card {
+    min-height: 215px;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .flash-banner-bg-img {
+    width: 48%;
+  }
+
+  .flash-banner-overlay-content {
+    width: 58%;
+    gap: 6px;
+  }
+
+  .banner-brand-chip {
+    padding: 4px 9px;
+  }
+
+  .banner-chip-logo {
+    height: 15px;
+  }
+
+  .banner-sub-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+    margin-bottom: 3px;
+  }
+
+  .banner-main-headline {
+    font-size: 17px;
+    margin-bottom: 4px;
+  }
+
+  .banner-discount-box {
+    padding: 2px 8px;
+    gap: 5px;
+  }
+
+  .disc-label {
+    font-size: 8.5px;
+  }
+
+  .disc-number {
+    font-size: 16px;
+  }
+
+  .banner-shop-now-btn {
+    padding: 7px 14px;
+    border-radius: 999px;
+  }
+
+  .banner-shop-now-btn span {
+    font-size: 11.5px;
   }
 
   .flash-sale-3d-text {
@@ -5128,6 +5285,29 @@ button {
   .btn-lihat-produk {
     height: 34px;
     font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .flash-promo-banner-card {
+    min-height: 205px;
+    padding: 14px;
+  }
+
+  .flash-banner-bg-img {
+    width: 46%;
+  }
+
+  .flash-banner-overlay-content {
+    width: 60%;
+  }
+
+  .banner-main-headline {
+    font-size: 15.5px;
+  }
+
+  .disc-number {
+    font-size: 15px;
   }
 }
 
@@ -6952,7 +7132,8 @@ button {
 .floating-chat-container {
   position: fixed;
   bottom: 26px;
-  right: 26px;
+  left: 26px;
+  right: auto;
   z-index: 990;
 }
 
@@ -7027,7 +7208,8 @@ button {
 .chat-popup-card {
   position: absolute;
   bottom: 64px;
-  right: 0;
+  left: 0;
+  right: auto;
   width: 360px;
   max-width: calc(100vw - 32px);
   border-radius: 20px;
@@ -7331,11 +7513,13 @@ button {
 @media (max-width: 480px) {
   .floating-chat-container {
     bottom: 20px;
-    right: 16px;
+    left: 16px;
+    right: auto;
   }
 
   .chat-popup-card {
-    right: 0;
+    left: 0;
+    right: auto;
     width: calc(100vw - 32px);
     bottom: 60px;
   }
@@ -7560,46 +7744,87 @@ button {
 /* Responsive (Mobile & Tablet) */
 @media (max-width: 991px) {
   .koafy-makeup-story-section {
-    padding: 30px 0 50px 0;
+    padding: 24px 0 40px 0;
   }
 
   .makeup-story-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 20px;
   }
 
   .story-quote-text {
-    font-size: 21px;
+    font-size: 19px;
     line-height: 1.4;
   }
 
+  /* Gambar 2 (Lip Tint Model) - Dikecilkan & dipaskan untuk mobile */
   .story-image-card-tall {
-    min-height: 380px;
-    max-height: 440px;
+    min-height: auto;
+    height: 230px;
+    max-height: 230px;
+    border-radius: 18px;
+  }
+
+  .story-img-tall {
+    object-position: center 35%;
   }
 
   .story-bottom-split-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
   }
 
+  /* Gambar 3 (Cushion Model) - Dikecilkan & dipaskan untuk mobile */
   .story-image-card-small {
-    min-height: 300px;
-    max-height: 360px;
+    min-height: auto;
+    height: 210px;
+    max-height: 210px;
+    border-radius: 18px;
+  }
+
+  .story-img-small {
+    object-position: center 25%;
   }
 }
 
 @media (max-width: 540px) {
   .story-quote-text {
-    font-size: 18.5px;
+    font-size: 16.5px;
+  }
+
+  /* Gambar 2 & 3 di smartphone Android & iOS */
+  .story-image-card-tall {
+    height: 195px;
+    max-height: 195px;
+    border-radius: 16px;
+  }
+
+  .story-img-tall {
+    object-position: center 35%;
+  }
+
+  .story-image-card-small {
+    height: 185px;
+    max-height: 185px;
+    border-radius: 16px;
+  }
+
+  .story-img-small {
+    object-position: center 25%;
   }
 
   .story-info-card {
-    padding: 26px 20px;
+    padding: 20px 16px;
+    border-radius: 16px;
   }
 
   .info-card-title {
-    font-size: 18px;
+    font-size: 17px;
+  }
+
+  .info-card-desc {
+    font-size: 13px;
+    margin-bottom: 18px;
   }
 }
 
@@ -8835,4 +9060,602 @@ button {
   font-size: 14px;
   color: #4A3540;
   cursor: pointer;
+}
+
+/* =====================================================================
+   ABOUT US / TENTANG KAMI PAGE STYLES
+   - Reference Image 3: Hero section with staggered imagery & tag pills
+   - Reference Image 1: Cerita Kami (Image left, 3 story cards right)
+   - Reference Image 2: Mengapa Memilih Koafy (Timeline/steps left, image right)
+   - Section 4: Komitmen Kami (Elevated brand commitment showcase)
+   ===================================================================== */
+.about-page-wrapper {
+  width: 100%;
+  min-height: 85vh;
+  background-color: #FAF5F8;
+  padding: 24px 0 80px;
+}
+
+.about-container {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 640px) {
+  .about-container {
+    padding: 0 24px;
+  }
+}
+
+.about-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #7A5B69;
+  margin-bottom: 32px;
+}
+
+.about-section-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #C7436E;
+  background: #FFF0F5;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid #FCE4EC;
+  margin-bottom: 12px;
+}
+
+.about-section-heading {
+  font-size: 32px;
+  font-weight: 800;
+  color: #2B141E;
+  font-family: 'Playfair Display', Georgia, serif;
+  margin-bottom: 20px;
+  line-height: 1.25;
+}
+
+@media (max-width: 640px) {
+  .about-section-heading {
+    font-size: 25px;
+  }
+}
+
+/* =====================================================================
+   SECTION 1: HERO & SINGLE FEATURED IMAGE (REF GAMBAR 2)
+   ===================================================================== */
+.about-hero-section {
+  margin-bottom: 70px;
+}
+
+.about-hero-header {
+  margin: 0 auto 32px auto;
+  max-width: 800px;
+  text-align: center;
+}
+
+.about-hero-title {
+  font-size: 38px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: #2B141E;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+@media (max-width: 768px) {
+  .about-hero-title {
+    font-size: 26px;
+  }
+}
+
+.about-single-hero-container {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.about-image-card {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(45, 18, 30, 0.08);
+  background: #FFFFFF;
+  border: 1.5px solid #F1DDE7;
+}
+
+.about-hero-main-card {
+  width: 100%;
+}
+
+.about-single-hero-img {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .about-single-hero-img {
+    height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-single-hero-img {
+    height: 320px;
+  }
+}
+
+.about-img-fluid {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  display: block;
+}
+
+.img-badge-overlay {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6E3B52;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #C7436E;
+}
+
+.about-intro-text-box {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1.5px solid #F1DDE7;
+  padding: 26px 30px;
+  box-shadow: 0 8px 24px rgba(45, 18, 30, 0.04);
+}
+
+.about-paragraph-lead {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #4A3540;
+  margin-bottom: 20px;
+}
+
+.about-tag-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.about-tag-pill {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6E3B52;
+  background: #FFF5F9;
+  border: 1px solid #F6DCE8;
+  padding: 6px 14px;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.about-tag-pill:hover {
+  background: #C7436E;
+  color: #FFFFFF;
+  border-color: #C7436E;
+}
+
+/* =====================================================================
+   SECTION 2: CERITA KAMI (REF GAMBAR 1)
+   ===================================================================== */
+.about-story-section {
+  margin-bottom: 70px;
+  background: #FFFFFF;
+  border-radius: 28px;
+  border: 1.5px solid #F1DDE7;
+  padding: 44px;
+  box-shadow: 0 12px 36px rgba(45, 18, 30, 0.04);
+}
+
+@media (max-width: 640px) {
+  .about-story-section {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+}
+
+.story-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 48px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .story-grid-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.story-image-card {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(45, 18, 30, 0.08);
+  border: 1px solid #F1DDE7;
+}
+
+.story-img-main {
+  width: 100%;
+  height: 480px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .story-img-main {
+    height: 340px;
+  }
+}
+
+.story-float-card {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  right: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(45, 18, 30, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.float-card-icon {
+  font-size: 24px;
+}
+
+.float-card-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2B141E;
+}
+
+.float-card-sub {
+  display: block;
+  font-size: 12px;
+  color: #7A5B69;
+}
+
+.story-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.story-value-block {
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: #FFF9FC;
+  border: 1px solid #F6E6EF;
+  transition: all 0.22s ease;
+}
+
+.story-value-block:hover {
+  border-color: #F48EC1;
+  background: #FFF5F9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 60, 120, 0.08);
+}
+
+.story-value-title {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: #2B141E;
+  margin-bottom: 7px;
+}
+
+.story-value-desc {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #553443;
+}
+
+/* =====================================================================
+   SECTION 3: MENGAPA MEMILIH KOAFY? (REF GAMBAR 2)
+   ===================================================================== */
+.about-why-section {
+  margin-bottom: 70px;
+}
+
+.why-grid-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .why-grid-layout {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+}
+
+.why-section-sub {
+  font-size: 14.5px;
+  color: #6E3B52;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.why-steps-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  position: relative;
+}
+
+.why-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  position: relative;
+}
+
+.why-step-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 21px;
+  top: 48px;
+  bottom: -20px;
+  width: 2px;
+  background: #F1DDE7;
+}
+
+.step-badge-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #DE5D83 0%, #C7436E 100%);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(199, 67, 110, 0.3);
+  z-index: 2;
+}
+
+.step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2B141E;
+  margin-bottom: 4px;
+}
+
+.step-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #553443;
+}
+
+.why-image-card {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(45, 18, 30, 0.08);
+  border: 1.5px solid #F1DDE7;
+  background: #FFFFFF;
+}
+
+.why-img-main {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .why-img-main {
+    height: 360px;
+  }
+}
+
+.why-stamp-badge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1B5E20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.stamp-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4CAF50;
+  color: #FFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+/* =====================================================================
+   SECTION 4: KOMITMEN KAMI (SHOWCASE BANNER DENGAN GAMBAR 8)
+   ===================================================================== */
+.about-commitment-section {
+  margin-bottom: 24px;
+}
+
+.commitment-card {
+  background: linear-gradient(135deg, #2D101C 0%, #4A192D 100%);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(45, 16, 28, 0.25);
+  border: 1px solid #6E2745;
+  color: #FFFFFF;
+}
+
+.commitment-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .commitment-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.commitment-content {
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .commitment-content {
+    padding: 28px 22px;
+  }
+}
+
+.commitment-tag {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #F8BBD0;
+  background: rgba(248, 187, 208, 0.15);
+  border: 1px solid rgba(248, 187, 208, 0.3);
+  padding: 4px 14px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+}
+
+.commitment-heading {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 16px;
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #FFFFFF;
+}
+
+@media (max-width: 640px) {
+  .commitment-heading {
+    font-size: 24px;
+  }
+}
+
+.commitment-quote {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #F7D8E6;
+  font-style: italic;
+  margin-bottom: 26px;
+}
+
+.commitment-badges-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 480px) {
+  .commitment-badges-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.c-badge-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.btn-about-shop {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 26px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #F51487 0%, #D44A78 100%);
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(245, 20, 135, 0.4);
+  transition: all 0.22s ease;
+}
+
+.btn-about-shop:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px rgba(245, 20, 135, 0.55);
+}
+
+.commitment-image-wrap {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.commitment-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }

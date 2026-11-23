@@ -117,6 +117,15 @@
           @logout="handleLogout"
         />
       </template>
+
+      <!-- 6. ABOUT US / TENTANG KAMI VIEW (Ref Gambar 1, 2, 3 + Gambar 4, 5, 6, 7, 8) -->
+      <template v-else-if="currentView === 'about'">
+        <AboutPage
+          @back-to-home="backToHome"
+          @explore-products="openProductsPage('all')"
+          @toast="showToast"
+        />
+      </template>
     </main>
 
     <!-- Site Footer (Hidden on Auth & Admin view) -->
@@ -143,9 +152,9 @@
       @checkout="handleCheckout"
     />
 
-    <!-- Floating WhatsApp Chat CS Admin (Only on E-Commerce Storefront, hidden on admin) -->
+    <!-- Floating WhatsApp Chat CS Admin (Only on E-Commerce Storefront, hidden on admin & when drawer is open) -->
     <FloatingWhatsAppChat
-      v-if="currentView !== 'admin'"
+      v-if="currentView !== 'admin' && !activeDrawer"
       @toast="showToast"
     />
 
@@ -172,6 +181,7 @@ import AllProductsPage from './components/AllProductsPage.vue';
 import FloatingWhatsAppChat from './components/FloatingWhatsAppChat.vue';
 import KoafyMakeupStorySection from './components/KoafyMakeupStorySection.vue';
 import UserProfilePage from './components/UserProfilePage.vue';
+import AboutPage from './components/AboutPage.vue';
 
 const defaultUser = {
   name: 'Siti Rahma',
@@ -191,7 +201,7 @@ watch(currentUser, (val) => {
 }, { deep: true });
 
 const activeNav = ref('home');
-const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin' | 'profile'
+const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin' | 'profile' | 'about'
 const previousView = ref('home');
 const authMode = ref('login'); // 'login' | 'register'
 const selectedProduct = ref(null);
@@ -208,6 +218,14 @@ function syncRouteFromPath() {
   const path = window.location.pathname.toLowerCase();
   if (path === '/admin' || path.startsWith('/admin/')) {
     currentView.value = 'admin';
+  } else if (
+    path === '/about' ||
+    path === '/tentang-kami' ||
+    path === '/our-story' ||
+    path === '/tentang'
+  ) {
+    currentView.value = 'about';
+    activeNav.value = 'our-story';
   } else if (path === '/profile' || path === '/akun' || path === '/alamat') {
     currentView.value = 'profile';
     userProfileTab.value = 'addresses';
@@ -376,6 +394,16 @@ function handleLoginSuccess(user) {
   openUserProfile('addresses');
 }
 
+function openAboutPage() {
+  previousView.value = currentView.value;
+  currentView.value = 'about';
+  activeNav.value = 'our-story';
+  if (window.location.pathname !== '/about') {
+    window.history.pushState(null, '', '/about');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function backToHome() {
   if (previousView.value === 'products' && currentView.value === 'detail') {
     previousView.value = 'home';
@@ -396,6 +424,8 @@ watch(activeNav, (newNav) => {
     backToHome();
   } else if (newNav === 'shop-all' && currentView.value !== 'products') {
     openProductsPage();
+  } else if (newNav === 'our-story' && currentView.value !== 'about') {
+    openAboutPage();
   }
 });
 
@@ -405,6 +435,8 @@ function handleFooterNavigate(nav) {
     backToHome();
   } else if (nav === 'shop-all') {
     openProductsPage();
+  } else if (nav === 'our-story') {
+    openAboutPage();
   }
 }
 
