@@ -2,33 +2,33 @@
   <!-- =====================================================================
        SITE FOOTER (MATCHING HEADER COLOR & TONE + RESPONSIVE PC/ANDROID/IOS)
        ===================================================================== -->
-  <footer class="site-footer" aria-label="Koafy by HSK Secret Footer">
+  <footer class="site-footer" aria-label="Koafy Footer">
     <div class="footer-container">
 
-      <!-- TOP SECTION: 4 COLUMNS (Brand | Informasi HSK | Layanan | Contact Card) -->
+      <!-- TOP SECTION: 3 COLUMNS (Brand | Informasi Koafy | Contact Card) -->
       <div class="footer-top-grid">
 
-        <!-- COL 1: Logo (Same as Header) + HSK SECRET + Description -->
+        <!-- COL 1: Logo (Same as Header) + KOAFY + Description -->
         <div class="footer-brand-col">
           <a href="#home" class="footer-logo-link" @click.prevent="$emit('navigate', 'home')">
             <img
               src="/images/koafy-logo.png"
-              alt="Koafy by HSK Secret"
+              alt="Koafy"
               class="footer-logo-img"
             />
           </a>
-          <h3 class="footer-brand-heading">HSK SECRET</h3>
+          <h3 class="footer-brand-heading">KOAFY</h3>
           <p class="footer-brand-desc">
             {{ t('footerBrandDesc') }}
           </p>
         </div>
 
-        <!-- COL 2: INFORMASI HSK -->
+        <!-- COL 2: INFORMASI KOAFY -->
         <div class="footer-nav-col">
           <h4 class="footer-col-title">{{ t('footerInfoHsk') }}</h4>
           <ul class="footer-link-list">
             <li>
-              <a href="#tentang-hsk" class="footer-link" @click.prevent="$emit('toast', 'Membuka halaman Tentang HSK')">
+              <a href="#tentang-koafy" class="footer-link" @click.prevent="$emit('toast', 'Membuka halaman Tentang Koafy')">
                 <svg class="footer-link-icon" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                 </svg>
@@ -46,30 +46,7 @@
           </ul>
         </div>
 
-        <!-- COL 3: LAYANAN -->
-        <div class="footer-nav-col">
-          <h4 class="footer-col-title">{{ t('footerServices') }}</h4>
-          <ul class="footer-link-list">
-            <li>
-              <a href="#treatment-klinik" class="footer-link" @click.prevent="$emit('toast', 'Membuka layanan Treatment Klinik')">
-                <svg class="footer-link-icon" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
-                </svg>
-                <span>{{ t('footerClinic') }}</span>
-              </a>
-            </li>
-            <li>
-              <a href="#belanja-skincare" class="footer-link" @click.prevent="$emit('toast', 'Membuka katalog Belanja Skincare')">
-                <svg class="footer-link-icon" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
-                </svg>
-                <span>{{ t('footerShopSkincare') }}</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <!-- COL 4: CONTACT HSK SECRET CARD -->
+        <!-- COL 3: CONTACT KOAFY CARD -->
         <div class="footer-contact-col">
           <div class="footer-contact-card">
             <h4 class="footer-contact-title">{{ t('footerContact') }}</h4>
@@ -89,7 +66,7 @@
             </a>
 
             <a
-              href="mailto:CS@hsksecret.id"
+              href="mailto:CS@koafy.id"
               class="footer-contact-item"
             >
               <span class="footer-contact-icon-wrap">
@@ -97,7 +74,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                 </svg>
               </span>
-              <span class="footer-contact-text">CS@hsksecret.id</span>
+              <span class="footer-contact-text">CS@koafy.id</span>
             </a>
           </div>
         </div>

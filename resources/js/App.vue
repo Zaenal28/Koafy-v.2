@@ -4,12 +4,14 @@
     <NavbarHeader
       v-if="currentView !== 'auth' && currentView !== 'admin'"
       v-model:activeNav="activeNav"
+      :user="currentUser"
       :wishlist-count="wishlistItems.length"
       :cart-count="cartTotalQty"
       :claimed-vouchers-count="claimedVouchersCount"
       @open-drawer="openDrawer"
       @open-auth="openAuthPage('login')"
       @open-admin="openAdminPage"
+      @open-profile="openUserProfile"
       @toast="showToast"
     />
 
@@ -96,6 +98,25 @@
           @toast="showToast"
         />
       </template>
+
+      <!-- 5. USER PROFILE & ACCOUNT DASHBOARD VIEW (Ref Gambar 1 & Gambar 2) -->
+      <template v-else-if="currentView === 'profile'">
+        <UserProfilePage
+          v-model:user="currentUser"
+          :wishlist-items="wishlistItems"
+          :cart-items="cartItems"
+          :active-discount-value="activeDiscountValue"
+          :initial-tab="userProfileTab"
+          @back-to-home="backToHome"
+          @toast="showToast"
+          @move-to-cart="moveToCart"
+          @move-all-to-cart="moveAllToCart"
+          @toggle-favorite="toggleFavorite"
+          @change-qty="changeCartQty"
+          @checkout="handleCheckout"
+          @logout="handleLogout"
+        />
+      </template>
     </main>
 
     <!-- Site Footer (Hidden on Auth & Admin view) -->
@@ -150,9 +171,27 @@ import AdminDashboard from './components/AdminDashboard.vue';
 import AllProductsPage from './components/AllProductsPage.vue';
 import FloatingWhatsAppChat from './components/FloatingWhatsAppChat.vue';
 import KoafyMakeupStorySection from './components/KoafyMakeupStorySection.vue';
+import UserProfilePage from './components/UserProfilePage.vue';
+
+const defaultUser = {
+  name: 'Siti Rahma',
+  email: 'siti.rahma@example.com',
+  phone: '081234567890',
+  tier: 'GOLD MEMBER',
+  avatar: '/images/siti-rahma-avatar.jpg',
+  gender: 'Wanita',
+  birthDate: '1998-05-14',
+};
+
+const currentUser = ref(JSON.parse(localStorage.getItem('koafy_user') || 'null') || defaultUser);
+const userProfileTab = ref('addresses');
+
+watch(currentUser, (val) => {
+  localStorage.setItem('koafy_user', JSON.stringify(val));
+}, { deep: true });
 
 const activeNav = ref('home');
-const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin'
+const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin' | 'profile'
 const previousView = ref('home');
 const authMode = ref('login'); // 'login' | 'register'
 const selectedProduct = ref(null);
@@ -169,6 +208,18 @@ function syncRouteFromPath() {
   const path = window.location.pathname.toLowerCase();
   if (path === '/admin' || path.startsWith('/admin/')) {
     currentView.value = 'admin';
+  } else if (path === '/profile' || path === '/akun' || path === '/alamat') {
+    currentView.value = 'profile';
+    userProfileTab.value = 'addresses';
+  } else if (path === '/orders' || path === '/pesanan' || path === '/barang-dibeli') {
+    currentView.value = 'profile';
+    userProfileTab.value = 'orders';
+  } else if (path === '/wishlist') {
+    currentView.value = 'profile';
+    userProfileTab.value = 'wishlist';
+  } else if (path === '/cart' || path === '/keranjang') {
+    currentView.value = 'profile';
+    userProfileTab.value = 'cart';
   } else if (path === '/register' || path.startsWith('/register/')) {
     currentView.value = 'auth';
     authMode.value = 'register';
@@ -297,9 +348,32 @@ function openAdminPage() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function handleLoginSuccess(user) {
-  showToast(`Selamat datang, ${user.name || 'Member Koafy'}! Akun Anda siap digunakan.`);
+function openUserProfile(tab = 'addresses') {
+  userProfileTab.value = tab;
+  previousView.value = currentView.value;
+  currentView.value = 'profile';
+  const targetPath = tab === 'orders' ? '/orders' : tab === 'wishlist' ? '/wishlist' : tab === 'cart' ? '/cart' : '/profile';
+  if (window.location.pathname !== targetPath) {
+    window.history.pushState(null, '', targetPath);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleLogout() {
+  currentUser.value = { ...defaultUser };
+  showToast('Anda telah keluar dari akun');
   backToHome();
+}
+
+function handleLoginSuccess(user) {
+  currentUser.value = {
+    ...currentUser.value,
+    name: user.name || 'Siti Rahma',
+    email: user.email || 'siti.rahma@example.com',
+    phone: user.phone || currentUser.value.phone,
+  };
+  showToast(`Selamat datang, ${user.name || 'Member Koafy'}! Membuka halaman akun Anda...`);
+  openUserProfile('addresses');
 }
 
 function backToHome() {

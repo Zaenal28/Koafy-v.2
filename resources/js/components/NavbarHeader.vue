@@ -276,47 +276,104 @@
           </button>
 
           <div id="profile-popover" class="profile-popover" :class="{ open: isProfileOpen }">
-            <div class="profile-header">
-              <div class="profile-avatar">KA</div>
+            <div class="profile-header" @click="handleOpenProfile('addresses')">
+              <div class="profile-avatar">
+                <img
+                  v-if="user?.avatar"
+                  :src="user.avatar"
+                  :alt="user.name"
+                  style="width:100%;height:100%;border-radius:50%;object-fit:cover;"
+                />
+                <span v-else>SR</span>
+              </div>
               <div>
-                <div class="profile-name">Kayla Anindita</div>
-                <div class="profile-tier">Koafy Rose VIP Member</div>
+                <div class="profile-name">{{ user?.name || 'Siti Rahma' }}</div>
+                <div class="profile-tier">{{ user?.tier || 'GOLD MEMBER' }}</div>
               </div>
             </div>
+
+            <!-- 1. Alamat Pengiriman (Ref Gambar 1) -->
             <button
               type="button"
               class="profile-menu-link"
-              style="background-color: var(--koafy-pink-soft); color: var(--koafy-pink); font-weight: 700; border-radius: 8px; margin-bottom: 6px;"
-              @click="handleAuthClick"
+              style="background-color: #FFF0F5; color: #C7436E; font-weight: 700; border-radius: 8px; margin-bottom: 5px;"
+              @click="handleOpenProfile('addresses')"
             >
-              <span>{{ t('authMenu') }}</span>
+              <span>📍 Daftar Alamat Pengiriman</span>
               <span>&rsaquo;</span>
             </button>
+
+            <!-- 2. Barang Dibeli (Order History) -->
             <button
               type="button"
               class="profile-menu-link"
-              style="background-color: #FFF0F4; color: #D36279; font-weight: 700; border-radius: 8px; margin-bottom: 6px;"
-              @click="handleAdminClick"
+              @click="handleOpenProfile('orders')"
             >
-              <span>{{ t('adminPanel') }}</span>
+              <span>🛍️ Barang Dibeli (Pesanan)</span>
+              <span style="color:#C7436E;font-weight:700;font-size:11px;">2 Pesanan</span>
+            </button>
+
+            <!-- 3. Wishlist Saya -->
+            <button
+              type="button"
+              class="profile-menu-link"
+              @click="handleOpenProfile('wishlist')"
+            >
+              <span>❤️ Wishlist Saya</span>
+              <span style="color:#C7436E;font-weight:700;font-size:11px;">{{ wishlistCount }} item</span>
+            </button>
+
+            <!-- 4. Keranjang Belanja -->
+            <button
+              type="button"
+              class="profile-menu-link"
+              @click="handleOpenProfile('cart')"
+            >
+              <span>🛒 Keranjang Belanja</span>
+              <span style="color:#C7436E;font-weight:700;font-size:11px;">{{ cartCount }} item</span>
+            </button>
+
+            <!-- 5. Ubah Informasi Data Diri -->
+            <button
+              type="button"
+              class="profile-menu-link"
+              @click="handleOpenProfile('profile-info')"
+            >
+              <span>👤 Ubah Data Informasi</span>
               <span>&rsaquo;</span>
             </button>
-            <button type="button" class="profile-menu-link" @click="triggerProfileToast(t('myProfile'))">
-              <span>{{ t('myProfile') }}</span>
+
+            <!-- 6. Ubah Kata Sandi Akun -->
+            <button
+              type="button"
+              class="profile-menu-link"
+              @click="handleOpenProfile('password')"
+            >
+              <span>🔑 Ubah Kata Sandi</span>
               <span>&rsaquo;</span>
             </button>
-            <button type="button" class="profile-menu-link" @click="triggerProfileToast(t('myOrders'))">
-              <span>{{ t('myOrders') }}</span>
-              <span style="color:#F51487;font-weight:700;font-size:11px;">2 Active</span>
-            </button>
-            <button type="button" class="profile-menu-link" @click="triggerProfileToast(`${t('claimedVouchers')}: ${claimedVouchersCount}`)">
-              <span>{{ t('claimedVouchers') }}</span>
-              <span id="profile-voucher-count" style="color:#F51487;font-weight:700;font-size:11px;">{{ claimedVouchersCount }}</span>
-            </button>
-            <button type="button" class="profile-menu-link" @click="triggerProfileToast(t('accountSettings'))">
-              <span>{{ t('accountSettings') }}</span>
-              <span>&rsaquo;</span>
-            </button>
+
+            <!-- 7. Panel Admin Toko & Switch Mode -->
+            <div style="border-top: 1px dashed #F1DDE7; margin: 6px 0; padding-top: 6px;">
+              <button
+                type="button"
+                class="profile-menu-link"
+                style="background-color: #FFF5F9; color: #D36279; font-weight: 600; border-radius: 8px; margin-bottom: 4px;"
+                @click="handleAdminClick"
+              >
+                <span>{{ t('adminPanel') }}</span>
+                <span>&rsaquo;</span>
+              </button>
+              <button
+                type="button"
+                class="profile-menu-link"
+                style="color: #8A6B78; font-size: 12px;"
+                @click="handleAuthClick"
+              >
+                <span>Ganti Akun / Masuk Baru</span>
+                <span>&rsaquo;</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -348,6 +405,15 @@ import { ref, nextTick, onMounted, onUnmounted } from 'vue';
 import { currentLang, setLanguage, t } from '../i18n.js';
 
 defineProps({
+  user: {
+    type: Object,
+    default: () => ({
+      name: 'Siti Rahma',
+      email: 'siti.rahma@example.com',
+      tier: 'GOLD MEMBER',
+      avatar: '/images/siti-rahma-avatar.jpg',
+    }),
+  },
   activeNav: {
     type: String,
     default: 'home',
@@ -366,7 +432,14 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['update:activeNav', 'open-drawer', 'toast', 'open-auth', 'open-admin']);
+const emit = defineEmits([
+  'update:activeNav',
+  'open-drawer',
+  'toast',
+  'open-auth',
+  'open-admin',
+  'open-profile',
+]);
 
 const isScrolled = ref(false);
 const isPagesOpen = ref(false);
@@ -384,6 +457,11 @@ function chooseLanguage(lang) {
   setLanguage(lang);
   isLangOpen.value = false;
   emit('toast', lang === 'id' ? 'Bahasa berhasil diubah ke Bahasa Indonesia' : 'Language switched to English');
+}
+
+function handleOpenProfile(tab = 'addresses') {
+  isProfileOpen.value = false;
+  emit('open-profile', tab);
 }
 
 function handleAuthClick() {

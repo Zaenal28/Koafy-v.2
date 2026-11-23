@@ -1,16 +1,22 @@
 <template>
   <!-- =====================================================================
-       PURE IMAGE-ONLY RESPONSIVE HERO SLIDER
+       PURE IMAGE-ONLY RESPONSIVE HERO SLIDER (REF GAMBAR KOAFY)
+       - Card frame with rounded corners
+       - Bottom-right pagination indicator inside banner
+       - Responsive & balanced on desktop, tablet, Android, and iOS
        ===================================================================== -->
   <section class="hero-section" aria-label="Koafy Campaign Banner Slider">
     <div id="hero-stage-container" class="hero-stage-container">
       <div
         id="hero-viewport"
         class="hero-viewport"
+        @mouseenter="pauseAutoSlide"
+        @mouseleave="resumeAutoSlide"
         @touchstart.passive="onTouchStart"
+        @touchmove.passive="onTouchMove"
         @touchend.passive="onTouchEnd"
       >
-        <!-- Left & Right Circular Navigation Arrows (< and >) -->
+        <!-- Left & Right Sleek Navigation Arrows (< and >) -->
         <button
           id="hero-prev"
           type="button"
@@ -50,23 +56,24 @@
               class="hero-slide-img"
               :src="slide.src"
               :alt="slide.alt"
+              loading="eager"
             />
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Pagination Dots Centered Below Banner -->
-    <div class="hero-pagination-bar" role="tablist" aria-label="Navigasi Slide Banner">
-      <button
-        v-for="(slide, index) in slides"
-        :key="'dot-' + slide.id"
-        type="button"
-        class="hero-dot"
-        :class="{ active: currentSlide === index }"
-        :aria-label="'Slide ' + (index + 1)"
-        @click="selectSlide(index)"
-      ></button>
+        <!-- Pagination Dots Inside Banner at Bottom-Right (SESUAI GAMBAR REFERENSI) -->
+        <div class="hero-pagination-dots" role="tablist" aria-label="Navigasi Slide Banner">
+          <button
+            v-for="(slide, index) in slides"
+            :key="'dot-' + slide.id"
+            type="button"
+            class="hero-dot"
+            :class="{ active: currentSlide === index }"
+            :aria-label="'Slide ' + (index + 1)"
+            @click.stop="selectSlide(index)"
+          ></button>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -79,21 +86,28 @@ const emit = defineEmits(['claim-voucher']);
 const slides = ref([
   {
     id: 0,
-    campaignTitle: 'Koafy Healthy Barrier, Happy Bestie Voucher (Hingga 50K)',
-    src: '/images/banner-healthy-barrier.jpg',
-    alt: 'Koafy by HSK Secret - Healthy Barrier, Happy Bestie',
+    campaignTitle: 'Koafy Soft-Square Trio Voucher (Hingga 50K)',
+    src: '/images/banner-koafy-trio.jpg',
+    alt: 'Koafy Soft-Square Trio Edition',
   },
   {
     id: 1,
-    campaignTitle: 'Koafy Soft-Square Trio Voucher (Hingga 50K)',
-    src: '/images/banner-koafy-trio.jpg',
-    alt: 'Koafy by HSK Secret - Soft-Square Trio Edition',
+    campaignTitle: 'Koafy Butterbalm Duo Special Edition',
+    src: '/images/banner-koafy-butterbalm.jpg',
+    alt: 'Koafy Butterbalm Duo Edition',
+  },
+  {
+    id: 2,
+    campaignTitle: 'Koafy Healthy Barrier Edition',
+    src: '/images/banner-healthy-barrier.jpg',
+    alt: 'Koafy Healthy Barrier Edition',
   },
 ]);
 
 const currentSlide = ref(0);
 let autoSlideInterval = null;
 let touchStartX = 0;
+let touchStartY = 0;
 
 function goToSlide(index) {
   const total = slides.value.length;
@@ -116,30 +130,49 @@ function nextSlide() {
 }
 
 function startAutoSlide() {
-  autoSlideInterval = setInterval(() => {
-    goToSlide(currentSlide.value + 1);
-  }, 5500);
-}
-
-function resetAutoSlide() {
   if (autoSlideInterval) {
     clearInterval(autoSlideInterval);
   }
+  autoSlideInterval = setInterval(() => {
+    goToSlide(currentSlide.value + 1);
+  }, 5000);
+}
+
+function pauseAutoSlide() {
+  if (autoSlideInterval) {
+    clearInterval(autoSlideInterval);
+    autoSlideInterval = null;
+  }
+}
+
+function resumeAutoSlide() {
   startAutoSlide();
+}
+
+function resetAutoSlide() {
+  pauseAutoSlide();
+  resumeAutoSlide();
 }
 
 function onTouchStart(e) {
   if (e.changedTouches && e.changedTouches.length > 0) {
-    touchStartX = e.changedTouches[0].screenX;
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
   }
+}
+
+function onTouchMove(e) {
+  // Passive touch tracking
 }
 
 function onTouchEnd(e) {
   if (e.changedTouches && e.changedTouches.length > 0) {
-    const touchEndX = e.changedTouches[0].screenX;
-    const swipeDistance = touchEndX - touchStartX;
-    if (Math.abs(swipeDistance) > 40) {
-      if (swipeDistance < 0) {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const swipeDistanceX = touchEndX - touchStartX;
+    const swipeDistanceY = touchEndY - touchStartY;
+    if (Math.abs(swipeDistanceX) > 35 && Math.abs(swipeDistanceX) > Math.abs(swipeDistanceY) * 1.2) {
+      if (swipeDistanceX < 0) {
         nextSlide();
       } else {
         prevSlide();

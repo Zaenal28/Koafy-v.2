@@ -127,15 +127,13 @@ export const translations = {
     checkoutBtn: 'Lanjut ke Pembayaran',
 
     // Site Footer
-    footerBrandDesc: 'Mendampingi perjalanan kesehatan kulit Anda melalui layanan perawatan klinik bersama dokter ahli serta produk skincare berkualitas tinggi.',
-    footerInfoHsk: 'INFORMASI HSK',
-    footerServices: 'LAYANAN',
-    footerContact: 'CONTACT HSK SECRET',
-    footerAbout: 'Tentang HSK',
+    footerBrandHeading: 'KOAFY',
+    footerBrandDesc: 'Mendampingi perjalanan kesehatan kulit Anda melalui layanan perawatan klinik bersama dokter ahli, serta produk skincare dan makeup berkualitas tinggi yang disesuaikan dengan jenis kulit atau kebutuhan kulit Anda.',
+    footerInfoHsk: 'INFORMASI KOAFY',
+    footerContact: 'CONTACT KOAFY',
+    footerAbout: 'Tentang Koafy',
     footerHelp: 'Pusat Bantuan',
-    footerClinic: 'Treatment Klinik',
-    footerShopSkincare: 'Belanja Skincare',
-    footerCopyright: 'Koafy by HSK Secret. Hak cipta dilindungi undang-undang.',
+    footerCopyright: 'Koafy. Hak cipta dilindungi undang-undang.',
   },
 
   en: {
@@ -253,15 +251,13 @@ export const translations = {
     checkoutBtn: 'Proceed to Checkout',
 
     // Site Footer
-    footerBrandDesc: 'Guiding your skin health journey through clinical care with certified doctors and high-quality premium skincare essentials.',
-    footerInfoHsk: 'HSK INFORMATION',
-    footerServices: 'SERVICES',
-    footerContact: 'CONTACT HSK SECRET',
-    footerAbout: 'About HSK',
+    footerBrandHeading: 'KOAFY',
+    footerBrandDesc: 'Guiding your skin health journey through clinical care with certified doctors, along with high-quality skincare and makeup products tailored to your skin type and specific skin needs.',
+    footerInfoHsk: 'KOAFY INFORMATION',
+    footerContact: 'CONTACT KOAFY',
+    footerAbout: 'About Koafy',
     footerHelp: 'Help Center',
-    footerClinic: 'Clinic Treatment',
-    footerShopSkincare: 'Shop Skincare',
-    footerCopyright: 'Koafy by HSK Secret. All rights reserved.',
+    footerCopyright: 'Koafy. All rights reserved.',
   },
 };
 
