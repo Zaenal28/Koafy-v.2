@@ -245,10 +245,15 @@
             </label>
 
             <!-- Submit Button -->
-            <button type="submit" class="btn-auth-submit">
-              Daftar Akun Baru
+            <button type="submit" class="btn-auth-submit" :disabled="isSubmitting">
+              {{ isSubmitting ? 'Memproses JWT...' : 'Daftar Akun Baru' }}
             </button>
           </form>
+
+          <!-- Error Alert Message -->
+          <div v-if="authError" style="margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; font-size: 12.5px; font-weight: 600;">
+            ⚠️ {{ authError }}
+          </div>
 
           <!-- Toggle Switcher: Login <-> Register -->
           <div class="auth-switch-footer">
@@ -260,6 +265,17 @@
               Already have an account?
               <button type="button" class="auth-switch-btn" @click="toggleAuthMode(false)">Sign in</button>
             </span>
+          </div>
+
+          <!-- Quick Admin Portal Link -->
+          <div style="text-align: center; margin-top: 12px;">
+            <a
+              href="/login/admin"
+              style="font-size: 12px; color: #7A5B69; text-decoration: underline; font-weight: 600;"
+              @click.prevent="$emit('open-admin-login')"
+            >
+              🔐 Login sebagai Admin? Masuk Portal Admin (JWT)
+            </a>
           </div>
 
           <!-- Bottom Copyright -->
@@ -325,24 +341,28 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['back-to-home', 'login-success', 'toast', 'switch-mode']);
+const emit = defineEmits(['back-to-home', 'login-success', 'toast', 'switch-mode', 'open-admin-login']);
 
 const isRegister = ref(props.initialMode === 'register');
 const showPassword = ref(false);
-const showSocialLogin = ref(false); // Sesuai permintaan user: di-hide dahulu
+const showSocialLogin = ref(false);
+const isSubmitting = ref(false);
+const authError = ref('');
 
 watch(() => props.initialMode, (newMode) => {
   isRegister.value = (newMode === 'register');
+  authError.value = '';
 });
 
 function toggleAuthMode(toRegister) {
   isRegister.value = toRegister;
+  authError.value = '';
   emit('switch-mode', toRegister ? 'register' : 'login');
 }
 
 const loginForm = ref({
-  email: '',
-  password: '',
+  email: 'siti.rahma@example.com',
+  password: 'password123',
   agreed: true,
 });
 
@@ -364,20 +384,84 @@ function handleSocialLogin(provider) {
   }, 1000);
 }
 
-function submitLogin() {
+async function submitLogin() {
+  authError.value = '';
   if (!loginForm.value.email || !loginForm.value.password) return;
-  emit('login-success', {
-    name: loginForm.value.email.split('@')[0],
-    email: loginForm.value.email,
-  });
+
+  isSubmitting.value = true;
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        email: loginForm.value.email,
+        password: loginForm.value.password,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      authError.value = data.message || 'Email atau password tidak sesuai.';
+      isSubmitting.value = false;
+      return;
+    }
+
+    localStorage.setItem('koafy_customer_jwt', data.token);
+    emit('toast', data.message || 'Login JWT berhasil!');
+    emit('login-success', {
+      ...data.user,
+      jwtToken: data.token,
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    authError.value = 'Gagal menghubungi server autentikasi.';
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 
-function submitRegister() {
-  if (!registerForm.value.name || !registerForm.value.email || !registerForm.value.phone) return;
-  emit('login-success', {
-    name: registerForm.value.name,
-    email: registerForm.value.email,
-    phone: registerForm.value.phone,
-  });
+async function submitRegister() {
+  authError.value = '';
+  if (!registerForm.value.name || !registerForm.value.email || !registerForm.value.phone || !registerForm.value.password) return;
+
+  isSubmitting.value = true;
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        name: registerForm.value.name,
+        email: registerForm.value.email,
+        phone: registerForm.value.phone,
+        password: registerForm.value.password,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      const firstValidationErr = data.errors ? Object.values(data.errors)[0]?.[0] : null;
+      authError.value = firstValidationErr || data.message || 'Registrasi gagal. Email mungkin sudah terdaftar.';
+      isSubmitting.value = false;
+      return;
+    }
+
+    localStorage.setItem('koafy_customer_jwt', data.token);
+    emit('toast', data.message || 'Registrasi akun baru & JWT berhasil!');
+    emit('login-success', {
+      ...data.user,
+      jwtToken: data.token,
+    });
+  } catch (err) {
+    console.error('Register error:', err);
+    authError.value = 'Gagal menghubungi server registrasi.';
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>

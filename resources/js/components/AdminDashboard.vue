@@ -352,26 +352,86 @@
             />
           </div>
 
-          <!-- Notification Bell -->
-          <button
-            type="button"
-            class="admin-top-icon-btn"
-            title="3 Pesanan Baru Masuk"
-            @click="$emit('toast', 'Ada 3 pesanan baru masuk menunggu konfirmasi')"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-            </svg>
-            <span class="admin-notif-dot"></span>
-          </button>
+          <!-- Notification Bell (Notif Transaksi Masuk) -->
+          <div style="position: relative;">
+            <button
+              type="button"
+              class="admin-top-icon-btn"
+              :title="`${unreadNotifCount} Notifikasi Transaksi Baru`"
+              @click="toggleNotifDropdown"
+            >
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+              </svg>
+              <span v-if="unreadNotifCount > 0" class="admin-notif-badge-count">{{ unreadNotifCount }}</span>
+            </button>
 
-          <!-- Admin Avatar -->
+            <!-- Dropdown Panel Notifikasi Transaksi -->
+            <div v-if="isNotifDropdownOpen" class="admin-notif-dropdown-card" @click.stop>
+              <div class="notif-dropdown-header">
+                <div>
+                  <strong>Notifikasi Transaksi Masuk</strong>
+                  <small style="display:block; color:#6B7280; font-size:11px;">{{ unreadNotifCount }} transaksi menunggu dicek</small>
+                </div>
+                <button
+                  v-if="unreadNotifCount > 0"
+                  type="button"
+                  class="btn-mark-all-read"
+                  @click="markAllNotificationsRead"
+                >
+                  Tandai Dibaca
+                </button>
+              </div>
+
+              <div class="notif-dropdown-list">
+                <div
+                  v-if="recentOrders.length === 0"
+                  style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 12.5px;"
+                >
+                  Belum ada notifikasi transaksi terbaru.
+                </div>
+
+                <div
+                  v-for="ord in recentOrders.slice(0, 6)"
+                  :key="'notif-' + ord.id"
+                  class="notif-item-row"
+                  :class="{ unread: !ord.is_notif_read }"
+                  @click="openOrderFromNotif(ord)"
+                >
+                  <div class="notif-item-icon">🛍️</div>
+                  <div class="notif-item-content">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <strong style="font-size:12.5px; color:#111827;">{{ ord.buyer }}</strong>
+                      <span style="font-size:11px; color:#F51487; font-weight:700;">Rp {{ formatRupiah(ord.total) }}</span>
+                    </div>
+                    <div style="font-size:11.5px; color:#4B5563; margin: 2px 0;">
+                      {{ ord.id }} • {{ ord.metode_pembayaran || 'Transfer BCA' }}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span class="notif-status-mini">{{ ord.status }}</span>
+                      <small style="font-size:10.5px; color:#9CA3AF;">{{ ord.date }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Avatar & JWT Info -->
           <div class="admin-user-pill">
             <div class="admin-user-avatar">AK</div>
             <div class="admin-user-info">
-              <span class="admin-user-name">Admin Koafy</span>
-              <span class="admin-user-role">Super Administrator</span>
+              <span class="admin-user-name">{{ adminUser.name || 'Admin Koafy' }}</span>
+              <span class="admin-user-role">{{ adminUser.email || 'admin.koafy@gmail.com' }} • JWT</span>
             </div>
+            <button
+              type="button"
+              class="btn-admin-logout-mini"
+              title="Logout dari Sesi JWT Admin"
+              @click="$emit('admin-logout')"
+            >
+              Keluar
+            </button>
           </div>
         </div>
       </div>
@@ -1136,14 +1196,18 @@
       </section>
 
       <!-- =================================================================
-           TAB 6: PESANAN & TRANSAKSI
+           TAB 6: PESANAN & TRANSAKSI + PENGIRIMAN & RESI MANUAL
            ================================================================= -->
       <section v-else-if="currentTab === 'orders' || currentTab === 'shipping'" class="admin-tab-body">
         <div class="admin-card-table-wrap">
           <div class="card-table-header">
             <div>
-              <h2 class="card-table-title">Daftar Semua Pesanan Masuk</h2>
-              <p class="card-table-subtitle">Integrasi pembayaran, kurir pengiriman resi (J&amp;T, SiCepat), dan notifikasi WhatsApp</p>
+              <h2 class="card-table-title">
+                {{ currentTab === 'shipping' ? 'Penyiapan, Pengiriman & Input Nomor Resi Manual' : 'Daftar Transaksi, Verifikasi Pembayaran & Cetak Slip Resi' }}
+              </h2>
+              <p class="card-table-subtitle">
+                Cek bukti transfer, ubah status menjadi Pembayaran Berhasil, cetak resi slip barang, dan input nomor resi kurir secara manual
+              </p>
             </div>
             <div class="table-filter-group">
               <button
@@ -1151,21 +1215,28 @@
                 :class="['filter-btn', { active: orderFilter === 'all' }]"
                 @click="orderFilter = 'all'"
               >
-                Semua
+                Semua ({{ recentOrders.length }})
+              </button>
+              <button
+                type="button"
+                :class="['filter-btn', { active: orderFilter === 'pending' }]"
+                @click="orderFilter = 'pending'"
+              >
+                Perlu Verifikasi
               </button>
               <button
                 type="button"
                 :class="['filter-btn', { active: orderFilter === 'paid' }]"
                 @click="orderFilter = 'paid'"
               >
-                Lunas (Diproses)
+                Pembayaran Berhasil
               </button>
               <button
                 type="button"
                 :class="['filter-btn', { active: orderFilter === 'shipping' }]"
                 @click="orderFilter = 'shipping'"
               >
-                Dikirim
+                Sudah Dikirim
               </button>
             </div>
           </div>
@@ -1174,22 +1245,31 @@
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>No. Pesanan</th>
+                  <th>No. Invoice</th>
                   <th>Tanggal</th>
-                  <th>Pelanggan</th>
-                  <th>Nomor WhatsApp</th>
-                  <th>Item Produk</th>
-                  <th>Kurir &amp; Resi</th>
-                  <th>Total</th>
-                  <th>Status</th>
+                  <th>Pelanggan &amp; Alamat</th>
+                  <th>No. WhatsApp</th>
+                  <th>Barang &amp; Qty</th>
+                  <th>Jasa Kirim &amp; No. Resi</th>
+                  <th>Total Pembayaran</th>
+                  <th>Status Pembayaran</th>
+                  <th style="text-align: right;">Aksi Admin</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="ord in filteredOrders" :key="ord.id">
-                  <td><strong>{{ ord.id }}</strong></td>
+                  <td>
+                    <strong style="color:#111827;">{{ ord.id }}</strong>
+                    <span v-if="!ord.is_notif_read" class="new-notif-tag">BARU</span>
+                  </td>
                   <td>{{ ord.date }}</td>
                   <td>
-                    <strong>{{ ord.buyer }}</strong>
+                    <div class="order-buyer">
+                      <strong>{{ ord.buyer }}</strong>
+                      <small style="max-width: 210px; display: block; white-space: normal; color:#6B7280; line-height:1.3;">
+                        {{ ord.alamat || 'Jl. Senopati No. 45, Jakarta Selatan' }}
+                      </small>
+                    </div>
                   </td>
                   <td>
                     <a
@@ -1201,13 +1281,46 @@
                       💬 +62 {{ ord.phone }}
                     </a>
                   </td>
-                  <td>{{ ord.items }}</td>
                   <td>
-                    <span class="resi-badge">{{ ord.courier }}: {{ ord.trackingNo }}</span>
+                    <div>
+                      <strong>{{ ord.items_summary || ord.items }}</strong>
+                      <small style="display:block; color:#F51487; font-weight:700;">
+                        Total: {{ ord.total_qty || 1 }} Barang (PCS)
+                      </small>
+                    </div>
                   </td>
-                  <td><strong style="color:#F51487;">Rp {{ formatRupiah(ord.total) }}</strong></td>
+                  <td>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                      <span class="resi-badge">{{ ord.courier }}: <strong>{{ ord.trackingNo }}</strong></span>
+                      <small style="font-size:11px; color:#6B7280;">Status: {{ ord.status_pengiriman || 'Sedang Dikemas' }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <strong style="color:#F51487; font-size:14px;">Rp {{ formatRupiah(ord.total) }}</strong>
+                    <small style="display:block; font-size:11px; color:#6B7280;">{{ ord.metode_pembayaran || 'Transfer BCA' }}</small>
+                  </td>
                   <td>
                     <span :class="['status-pill', ord.statusClass]">{{ ord.status }}</span>
+                  </td>
+                  <td style="text-align: right;">
+                    <div style="display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+                      <button
+                        type="button"
+                        class="btn-admin-pink-sm"
+                        title="Cek Transaksi, Ubah Status Pembayaran Berhasil & Input Resi Manual"
+                        @click="handleOrderAction(ord)"
+                      >
+                        🔍 Cek &amp; Resi
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-outline-sm"
+                        title="Cetak Resi Slip Barang yang Dibeli"
+                        @click="openPrintReceiptModal(ord)"
+                      >
+                        🖨️ Cetak Slip
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -1408,17 +1521,20 @@
       </div>
     </div>
 
-    <!-- MODAL TAMBAH / EDIT PRODUK KATALOG (REF GAMBAR) -->
+    <!-- =====================================================================
+         MODAL TAMBAH / EDIT DATABASE DATA BARANG (LENGKAP 4 GAMBAR 1:1 800x800 & SHADE)
+         ===================================================================== -->
     <div v-if="isProductModalOpen" class="admin-modal-backdrop" @click="isProductModalOpen = false">
-      <div class="admin-modal-card" @click.stop style="max-width: 580px;">
+      <div class="admin-modal-card" style="max-width: 720px; max-height: 90vh; overflow-y: auto;" @click.stop>
         <div class="admin-modal-header">
-          <h3>{{ editingProduct ? 'Edit Data Produk & Katalog' : 'Tambah Produk Baru' }}</h3>
+          <h3>{{ editingProduct ? 'Edit Database Data Barang' : 'Tambah Data Barang Baru' }}</h3>
           <button type="button" class="modal-close-btn" @click="isProductModalOpen = false">✕</button>
         </div>
 
         <form class="admin-modal-form" @submit.prevent="saveProductForm">
+          <!-- Nama Barang -->
           <div class="form-group">
-            <label class="form-label">Nama Produk*</label>
+            <label class="form-label">Nama Barang*</label>
             <input
               v-model="productForm.name"
               type="text"
@@ -1428,9 +1544,10 @@
             />
           </div>
 
+          <!-- SKU & Kategori Produk -->
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label">Kode SKU*</label>
+              <label class="form-label">ID / Kode SKU Barang*</label>
               <input
                 v-model="productForm.sku"
                 type="text"
@@ -1450,9 +1567,10 @@
             </div>
           </div>
 
+          <!-- Harga Normal & Harga Promo / Harga Coret -->
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label">Harga Normal*</label>
+              <label class="form-label">Harga Normal (Rp)*</label>
               <input
                 v-model="productForm.normalPriceFormatted"
                 type="text"
@@ -1462,7 +1580,7 @@
               />
             </div>
             <div class="form-group">
-              <label class="form-label">Harga Diskon*</label>
+              <label class="form-label">Harga Promo / Harga Coret (Rp)*</label>
               <input
                 v-model="productForm.discountPriceFormatted"
                 type="text"
@@ -1473,6 +1591,7 @@
             </div>
           </div>
 
+          <!-- Stok & Status (active / inactive) -->
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label">Jumlah Stok (PCS)*</label>
@@ -1486,14 +1605,15 @@
               />
             </div>
             <div class="form-group">
-              <label class="form-label">Status Produk*</label>
+              <label class="form-label">Status Barang (Active / Inactive)*</label>
               <select v-model="productForm.status" class="form-control" style="background:#FFF;">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
+                <option value="ACTIVE">ACTIVE (Aktif Ditampilkan)</option>
+                <option value="INACTIVE">INACTIVE (Nonaktif)</option>
               </select>
             </div>
           </div>
 
+          <!-- Tanggal Masuk & Tanggal Expired -->
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label">Tanggal Masuk (DD-MM-YYYY)*</label>
@@ -1517,9 +1637,182 @@
             </div>
           </div>
 
+          <!-- Deskripsi Barang & Rekomendasi Tipe Kulit -->
+          <div class="form-group">
+            <label class="form-label">Deskripsi Barang</label>
+            <textarea
+              v-model="productForm.deskripsi_barang"
+              rows="2"
+              placeholder="Tuliskan deskripsi lengkap keunggulan produk..."
+              class="form-control"
+              style="height:auto; padding:8px 12px;"
+            ></textarea>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Kandungan / Ingredients</label>
+              <textarea
+                v-model="productForm.kandungan_ingredients"
+                rows="2"
+                placeholder="cth. 5X Ceramide, Niacinamide, Shea Butter..."
+                class="form-control"
+                style="height:auto; padding:8px 12px;"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Manfaat Utama</label>
+              <textarea
+                v-model="productForm.manfaat_utama"
+                rows="2"
+                placeholder="cth. Melembapkan 24 jam, mencerahkan..."
+                class="form-control"
+                style="height:auto; padding:8px 12px;"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Cara Pakai</label>
+              <input
+                v-model="productForm.cara_pakai"
+                type="text"
+                placeholder="cth. Oleskan merata pada wajah/bibir bersih..."
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rekomendasi Tipe Kulit</label>
+              <input
+                v-model="productForm.rekomendasi_tipe_kulit"
+                type="text"
+                placeholder="cth. Semua Jenis Kulit / Kulit Sensitif"
+                class="form-control"
+              />
+            </div>
+          </div>
+
+          <!-- 4 GAMBAR PRODUK (Rasio 1:1 800x800 px) -->
+          <div class="form-group" style="background:#FFF5F9; border:1.5px dashed #F8B4D2; border-radius:12px; padding:14px;">
+            <label class="form-label" style="color:#C70F6B; margin-bottom:4px;">
+              📸 4 Gambar Produk (Utama &amp; Galeri Detail)
+            </label>
+            <p style="font-size:11.5px; color:#6E3B52; margin:0 0 12px; line-height:1.45;">
+              <strong>Rekomendasi Dimensi:</strong> Gunakan gambar rasio <strong>1:1 (Kotak)</strong> dengan ukuran ideal <strong>800 x 800 px</strong> agar gambar presisi (tidak terlalu besar / kecil / terpotong) di halaman detail toko.
+            </p>
+
+            <div class="form-grid-2" style="gap:10px;">
+              <div v-for="slot in [1, 2, 3, 4]" :key="'img-slot-' + slot" style="background:#FFFFFF; border:1px solid #F1DDE7; border-radius:10px; padding:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <strong style="font-size:11.5px; color:#2D101C;">
+                    Gambar Produk {{ slot }} {{ slot === 1 ? '(Utama)*' : '(Galeri)' }}
+                  </strong>
+                  <span style="font-size:10px; color:#9CA3AF;">1:1 • 800x800px</span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <img
+                    v-if="productForm['gambar_produk_' + slot]"
+                    :src="productForm['gambar_produk_' + slot]"
+                    alt="Preview"
+                    style="width:44px; height:44px; border-radius:8px; object-fit:cover; border:1px solid #E5E7EB; flex-shrink:0;"
+                  />
+                  <div style="flex:1; min-width:0;">
+                    <input
+                      v-model="productForm['gambar_produk_' + slot]"
+                      type="text"
+                      :placeholder="'URL / Path Gambar ' + slot"
+                      class="form-control"
+                      style="height:30px; font-size:11.5px; margin-bottom:4px;"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style="font-size:10.5px; width:100%;"
+                      @change="handleProductImageUpload($event, slot)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VARIAN WARNA / SHADE (OPSIONAL: KODE WARNA & GAMBAR SESUAI WARNA) -->
+          <div class="form-group" style="background:#F8FAFC; border:1.5px solid #E2E8F0; border-radius:12px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div>
+                <label class="form-label" style="margin:0;">🎨 Varian Warna / Shade (Opsional)</label>
+                <small style="font-size:11px; color:#64748B;">Tambahkan kode warna hex &amp; gambar produk sesuai warna shade</small>
+              </div>
+              <button
+                type="button"
+                class="btn-outline-sm"
+                style="font-size:11.5px; padding:5px 10px;"
+                @click="addShadeRow"
+              >
+                + Tambah Shade
+              </button>
+            </div>
+
+            <div v-if="!productForm.shades || productForm.shades.length === 0" style="font-size:12px; color:#94A3B8; text-align:center; padding:8px;">
+              Belum ada varian warna / shade ditambahkan (Opsional).
+            </div>
+
+            <div
+              v-for="(sh, sIdx) in productForm.shades"
+              :key="'shade-' + sIdx"
+              style="display:grid; grid-template-columns: 1fr 120px 1.3fr auto; gap:8px; align-items:center; background:#FFFFFF; padding:8px; border-radius:8px; border:1px solid #E2E8F0; margin-bottom:8px;"
+            >
+              <input
+                v-model="sh.nama_shade"
+                type="text"
+                placeholder="Nama Shade (cth: 01 Rosewood)"
+                class="form-control"
+                style="height:34px; font-size:12px;"
+              />
+              <div style="display:flex; align-items:center; gap:4px;">
+                <input
+                  v-model="sh.kode_warna"
+                  type="color"
+                  style="width:30px; height:30px; border:none; padding:0; cursor:pointer; background:none;"
+                />
+                <input
+                  v-model="sh.kode_warna"
+                  type="text"
+                  placeholder="#C95B73"
+                  class="form-control"
+                  style="height:34px; font-size:11.5px;"
+                />
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <input
+                  v-model="sh.gambar_produk"
+                  type="text"
+                  placeholder="Gambar sesuai warna"
+                  class="form-control"
+                  style="height:28px; font-size:11px;"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  style="font-size:10px;"
+                  @change="handleShadeImageUpload($event, sIdx)"
+                />
+              </div>
+              <button
+                type="button"
+                style="background:#FEE2E2; color:#DC2626; border:none; border-radius:6px; width:28px; height:28px; cursor:pointer; font-weight:700;"
+                title="Hapus Shade"
+                @click="removeShadeRow(sIdx)"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
           <div class="admin-modal-actions">
             <button type="button" class="btn-outline-sm" @click="isProductModalOpen = false">Batal</button>
-            <button type="submit" class="btn-admin-pink">Simpan Produk</button>
+            <button type="submit" class="btn-admin-pink">Simpan ke Database Barang</button>
           </div>
         </form>
       </div>
@@ -1527,9 +1820,9 @@
 
     <!-- MODAL PREVIEW DETAIL PRODUK (REF GAMBAR) -->
     <div v-if="isProductViewModalOpen" class="admin-modal-backdrop" @click="isProductViewModalOpen = false">
-      <div class="admin-modal-card" @click.stop style="max-width: 520px;">
+      <div class="admin-modal-card" style="max-width: 560px;" @click.stop>
         <div class="admin-modal-header">
-          <h3>Detail Produk &amp; Informasi Expired</h3>
+          <h3>Detail Data Barang &amp; Informasi Expired</h3>
           <button type="button" class="modal-close-btn" @click="isProductViewModalOpen = false">✕</button>
         </div>
 
@@ -1551,7 +1844,7 @@
               <strong style="color: #374151;">{{ viewingProduct.normalPriceFormatted }}</strong>
             </div>
             <div>
-              <span style="color: #6B7280; display: block;">Harga Diskon</span>
+              <span style="color: #6B7280; display: block;">Harga Promo / Diskon</span>
               <strong style="color: #D36279; font-size: 15px;">{{ viewingProduct.discountPriceFormatted }}</strong>
             </div>
             <div>
@@ -1571,15 +1864,19 @@
               <span>{{ viewingProduct.tglExpired }}</span>
             </div>
             <div>
-              <span style="color: #6B7280; display: block;">Masa Berlaku Tersisa</span>
-              <strong style="color: #111827;">{{ viewingProduct.masaBerlaku }}</strong>
+              <span style="color: #6B7280; display: block;">Rekomendasi Tipe Kulit</span>
+              <strong>{{ viewingProduct.rekomendasi_tipe_kulit || 'Semua Jenis Kulit' }}</strong>
             </div>
             <div>
               <span style="color: #6B7280; display: block;">Status Expired</span>
-              <span :class="['expired-status-pill', viewingProduct.statusExpired.toLowerCase()]">
-                {{ viewingProduct.statusExpired }}
+              <span :class="['expired-status-pill', (viewingProduct.statusExpired || 'SAFE').toLowerCase()]">
+                {{ viewingProduct.statusExpired || 'SAFE' }}
               </span>
             </div>
+          </div>
+
+          <div v-if="viewingProduct.deskripsi_barang" style="font-size:12.5px; color:#374151; background:#F9FAFB; padding:10px; border-radius:8px;">
+            <strong>Deskripsi:</strong> {{ viewingProduct.deskripsi_barang }}
           </div>
 
           <div class="admin-modal-actions" style="margin-top: 10px;">
@@ -1595,11 +1892,281 @@
         </div>
       </div>
     </div>
+
+    <!-- =====================================================================
+         MODAL ADMIN 1: CEK TRANSAKSI, UBAH STATUS PEMBAYARAN BERHASIL & INPUT RESI MANUAL
+         ===================================================================== -->
+    <div v-if="isOrderManageModalOpen && managingOrder" class="admin-modal-backdrop" @click="isOrderManageModalOpen = false">
+      <div class="admin-modal-card" style="max-width: 680px; max-height: 90vh; overflow-y: auto;" @click.stop>
+        <div class="admin-modal-header">
+          <div>
+            <h3 style="margin:0;">Verifikasi Transaksi &amp; Pengiriman Resi</h3>
+            <small style="color:#6B7280; font-size:12px;">Invoice: <strong style="color:#F51487;">{{ managingOrder.id }}</strong> • Tanggal: {{ managingOrder.date }}</small>
+          </div>
+          <button type="button" class="modal-close-btn" @click="isOrderManageModalOpen = false">✕</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <!-- 1. Data Customer & Alamat -->
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:14px; font-size:12.5px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <strong style="color:#0F172A; font-size:13.5px;">👤 Data Customer &amp; Alamat Pengiriman</strong>
+              <span style="color:#64748B;">ID Customer: #{{ managingOrder.id_customer || 1 }}</span>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <div><strong>Nama Penerima:</strong> {{ managingOrder.buyer }}</div>
+              <div><strong>No. Telepon / WA:</strong> +62 {{ managingOrder.phone }}</div>
+              <div style="grid-column: span 2;">
+                <strong>Alamat Lengkap:</strong> {{ managingOrder.alamat || 'Jl. Senopati No. 45, Kebayoran Baru, Jakarta Selatan' }}
+                <span v-if="managingOrder.kecamatan"> ({{ managingOrder.kecamatan }} {{ managingOrder.kode_pos }})</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Rincian Barang yang Dibeli & Total Pembayaran -->
+          <div style="background:#FFFFFF; border:1px solid #E5E7EB; border-radius:12px; padding:14px;">
+            <strong style="display:block; font-size:13.5px; color:#111827; margin-bottom:10px;">
+              🛍️ Detail Barang yang Dibeli ({{ managingOrder.total_qty || 1 }} PCS)
+            </strong>
+            <table style="width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:10px;">
+              <thead>
+                <tr style="border-bottom:1px solid #E5E7EB; text-align:left; color:#6B7280;">
+                  <th style="padding:6px 4px;">Nama Produk</th>
+                  <th style="padding:6px 4px;">Varian</th>
+                  <th style="padding:6px 4px;">Qty</th>
+                  <th style="padding:6px 4px; text-align:right;">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-if="Array.isArray(managingOrder.items) && managingOrder.items.length">
+                  <tr v-for="(it, idx) in managingOrder.items" :key="idx" style="border-bottom:1px dashed #F3F4F6;">
+                    <td style="padding:6px 4px; font-weight:600;">{{ it.name || it.nama_produk }}</td>
+                    <td style="padding:6px 4px; color:#6B7280;">{{ it.shade || 'Standar' }}</td>
+                    <td style="padding:6px 4px; font-weight:700;">{{ it.qty }}x</td>
+                    <td style="padding:6px 4px; text-align:right; font-weight:700;">Rp {{ formatRupiah((it.price || it.harga || 156510) * (it.qty || 1)) }}</td>
+                  </tr>
+                </template>
+                <tr v-else>
+                  <td style="padding:6px 4px; font-weight:600;">{{ managingOrder.items_summary || managingOrder.items }}</td>
+                  <td style="padding:6px 4px; color:#6B7280;">{{ managingOrder.shade || 'Standar' }}</td>
+                  <td style="padding:6px 4px; font-weight:700;">{{ managingOrder.total_qty || 1 }}x</td>
+                  <td style="padding:6px 4px; text-align:right; font-weight:700;">Rp {{ formatRupiah(managingOrder.total) }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:#6B7280; padding-top:6px;">
+              <span>Metode Pembayaran: <strong>{{ managingOrder.metode_pembayaran || 'Transfer Bank BCA' }}</strong></span>
+              <span>Ongkir: <strong>Rp {{ formatRupiah(managingOrder.ongkir || 0) }}</strong></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px solid #E5E7EB;">
+              <strong style="font-size:13.5px; color:#111827;">Total Pembayaran</strong>
+              <strong style="font-size:17px; color:#F51487;">Rp {{ formatRupiah(managingOrder.total) }}</strong>
+            </div>
+          </div>
+
+          <!-- 3. Bukti Transfer BCA (Jika Ada) & Tombol Ubah Status Pembayaran Berhasil -->
+          <div style="background:#FFF5F9; border:1.5px solid #F8B4D2; border-radius:12px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div>
+                <strong style="font-size:13.5px; color:#2D101C;">💳 Verifikasi Status Pembayaran</strong>
+                <div style="font-size:12px; color:#7A5B69;">
+                  Status Saat Ini: <strong style="color:#F51487;">{{ managingOrder.status }}</strong>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn-admin-pink"
+                style="background:#16A34A; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);"
+                @click="markPaymentSuccess(managingOrder)"
+              >
+                ✔ Ubah Status: Pembayaran Berhasil
+              </button>
+            </div>
+
+            <div v-if="managingOrder.nama_rekening_pengirim || managingOrder.bukti_transfer" style="background:#FFFFFF; border:1px solid #FCE4EC; border-radius:10px; padding:10px; display:flex; gap:12px; align-items:center;">
+              <img
+                v-if="managingOrder.bukti_transfer"
+                :src="managingOrder.bukti_transfer"
+                alt="Bukti Transfer"
+                style="width:70px; height:70px; object-fit:cover; border-radius:8px; border:1px solid #E5E7EB;"
+              />
+              <div style="font-size:12px;">
+                <div><strong>Rekening Pengirim:</strong> {{ managingOrder.nama_rekening_pengirim || managingOrder.buyer }}</div>
+                <div><strong>Bank Pengirim:</strong> {{ managingOrder.bank_pengirim || 'BCA' }}</div>
+                <span style="color:#16A34A; font-weight:700; font-size:11.5px;">✓ Bukti screenshot transfer terlampir</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Penyiapan & Penyerahan Barang: Input Nomor Resi Secara Manual -->
+          <div style="background:#F0F9FF; border:1.5px solid #BAE6FD; border-radius:12px; padding:14px;">
+            <strong style="display:block; font-size:13.5px; color:#0369A1; margin-bottom:10px;">
+              🚚 Penyiapan &amp; Penyerahan Barang (Input Nomor Resi Manual)
+            </strong>
+            <div class="form-grid-2" style="gap:10px; margin-bottom:10px;">
+              <div>
+                <label class="form-label" style="font-size:11.5px;">Jasa Pengiriman / Kurir</label>
+                <select v-model="resiForm.jasa_pengiriman" class="form-control" style="background:#FFFFFF; height:38px;">
+                  <option value="J&T Express - Regular">J&amp;T Express - Regular</option>
+                  <option value="SiCepat BEST (Next Day)">SiCepat BEST (Next Day)</option>
+                  <option value="JNE YES Express">JNE YES Express</option>
+                  <option value="Anteraja Regular Eco">Anteraja Regular Eco</option>
+                  <option value="Instant GoSend / Grab">Instant GoSend / Grab</option>
+                  <option value="Ambil di Klinik Koafy">Ambil di Klinik Koafy</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" style="font-size:11.5px;">Status Pengiriman</label>
+                <select v-model="resiForm.status_pengiriman" class="form-control" style="background:#FFFFFF; height:38px;">
+                  <option value="Menunggu Konfirmasi">Menunggu Konfirmasi</option>
+                  <option value="Sedang Dikemas / Siap Kirim">Sedang Dikemas / Siap Kirim</option>
+                  <option value="Dikirim">Dikirim (Diserahkan ke Kurir)</option>
+                  <option value="Selesai">Selesai (Diterima Customer)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; align-items:flex-end;">
+              <div style="flex:1;">
+                <label class="form-label" style="font-size:11.5px;">Input Nomor Resi Secara Manual*</label>
+                <input
+                  v-model="resiForm.no_resi"
+                  type="text"
+                  placeholder="Ketik nomor resi pengiriman (cth: JT8829104599)"
+                  class="form-control"
+                  style="background:#FFFFFF; height:38px; font-family:monospace; font-weight:700;"
+                />
+              </div>
+              <button
+                type="button"
+                class="btn-admin-pink"
+                style="height:38px; background:#0284C7;"
+                @click="saveManualResi(managingOrder)"
+              >
+                💾 Simpan No. Resi
+              </button>
+            </div>
+          </div>
+
+          <!-- Modal Bottom Actions -->
+          <div class="admin-modal-actions" style="justify-content:space-between;">
+            <button
+              type="button"
+              class="btn-admin-pink"
+              @click="openPrintReceiptModal(managingOrder)"
+            >
+              🖨️ Cetak Resi / Slip Barang
+            </button>
+            <button type="button" class="btn-outline-sm" @click="isOrderManageModalOpen = false">
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL ADMIN 2: CETAK RESI / PACKING SLIP (FORMAT GAMBAR KE-2 • 100 x 150 mm)
+         ===================================================================== -->
+    <div v-if="isPrintReceiptModalOpen && printingOrder" class="admin-modal-backdrop" @click="isPrintReceiptModalOpen = false">
+      <div class="admin-modal-card print-slip-modal-card" style="max-width: 440px; padding: 20px;" @click.stop>
+        <div class="admin-modal-header no-print" style="margin-bottom: 12px; padding-bottom: 10px;">
+          <div>
+            <h3 style="margin:0; font-size:15px;">🖨️ Cetak Packing Slip / Resi</h3>
+            <small style="color:#6B7280; font-size:11.5px;">Ukuran Kertas: <strong>100 x 150 mm (10 x 15 cm / A6)</strong></small>
+          </div>
+          <button type="button" class="modal-close-btn" @click="isPrintReceiptModalOpen = false">✕</button>
+        </div>
+
+        <!-- Printable Slip 100 x 150 mm (Exact Match Image 2) -->
+        <div id="printable-resi-slip" class="packing-slip-100x150">
+          <!-- Top Header: Brand + Packing Slip (Left) | Order ID + Timestamp (Right) -->
+          <div class="ps-header">
+            <div class="ps-header-left">
+              <div class="ps-brand-name">HSK SECRET</div>
+              <div class="ps-doc-type">PACKING SLIP</div>
+            </div>
+            <div class="ps-header-right">
+              <div class="ps-order-code">{{ printingOrder.id }}</div>
+              <div class="ps-order-date">{{ printingOrder.date }}{{ printingOrder.date && !printingOrder.date.includes('WIB') ? ', 15:40 WIB' : '' }}</div>
+            </div>
+          </div>
+
+          <div class="ps-divider-solid"></div>
+
+          <!-- Penerima Section -->
+          <div class="ps-recipient-section">
+            <div class="ps-recipient-label">PENERIMA</div>
+            <div class="ps-recipient-name-phone">
+              <strong>{{ printingOrder.buyer }}</strong> &middot; +62{{ String(printingOrder.phone || '').replace(/^(\+62|62|0)/, '') }}
+            </div>
+            <div class="ps-recipient-address">
+              {{ printingOrder.alamat || 'Jl. Senopati No. 45, Kebayoran Baru, Jakarta Selatan' }}<template v-if="printingOrder.kecamatan">, {{ printingOrder.kecamatan }}</template><template v-if="printingOrder.kode_pos"> {{ printingOrder.kode_pos }}</template>
+            </div>
+          </div>
+
+          <!-- Produk & Qty List (Minimalist Horizontal Lines Only) -->
+          <div class="ps-products-table">
+            <div class="ps-prod-thead">
+              <span>Produk</span>
+              <span class="ps-col-qty">Qty</span>
+            </div>
+
+            <template v-if="Array.isArray(printingOrder.items) && printingOrder.items.length">
+              <div
+                v-for="(item, idx) in printingOrder.items"
+                :key="idx"
+                class="ps-prod-row"
+              >
+                <div class="ps-prod-info">
+                  <div class="ps-prod-title">{{ item.name || item.nama_produk }}</div>
+                  <div class="ps-prod-variant">
+                    {{ formatProductSlug(item.name || item.nama_produk) }} &middot; {{ item.shade || 'Default' }}
+                  </div>
+                </div>
+                <div class="ps-prod-qty">{{ item.qty }}</div>
+              </div>
+            </template>
+
+            <div v-else class="ps-prod-row">
+              <div class="ps-prod-info">
+                <div class="ps-prod-title">{{ printingOrder.items_summary || printingOrder.items }}</div>
+                <div class="ps-prod-variant">
+                  {{ formatProductSlug(printingOrder.items_summary || printingOrder.items) }} &middot; {{ printingOrder.shade || 'Default' }}
+                </div>
+              </div>
+              <div class="ps-prod-qty">{{ printingOrder.total_qty || 1 }}</div>
+            </div>
+          </div>
+
+          <!-- Bottom Dashed Line + Terbayar / Courier / Resi -->
+          <div class="ps-footer">
+            <div class="ps-footer-top">
+              <strong class="ps-paid-status">
+                {{ isOrderPaidStatus(printingOrder.status) ? 'Terbayar' : printingOrder.status }}
+              </strong>
+              <span class="ps-courier-name">{{ printingOrder.courier }}</span>
+            </div>
+            <div class="ps-resi-line">
+              Resi: {{ printingOrder.trackingNo && printingOrder.trackingNo !== 'BELUM DIINPUT' ? printingOrder.trackingNo : '-' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-modal-actions no-print" style="margin-top:16px;">
+          <button type="button" class="btn-outline-sm" @click="isPrintReceiptModalOpen = false">Tutup</button>
+          <button type="button" class="btn-admin-pink" @click="triggerPrintSlip">
+            🖨️ Cetak Resi (100 x 150 mm)
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 const props = defineProps({
   isFlashSaleActive: {
@@ -1608,15 +2175,79 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['go-to-store', 'toast', 'update:isFlashSaleActive']);
+const emit = defineEmits(['go-to-store', 'toast', 'update:isFlashSaleActive', 'admin-logout']);
 
 const isMobileSidebarOpen = ref(false);
 const currentTab = ref('dashboard');
 const adminSearch = ref('');
 const orderFilter = ref('all');
 
+const adminUser = ref(
+  JSON.parse(localStorage.getItem('koafy_admin_user') || 'null') || {
+    name: 'Admin Koafy Official',
+    email: 'admin.koafy@gmail.com',
+    role: 'admin',
+  }
+);
+
 function formatRupiah(val) {
   return Number(val || 0).toLocaleString('id-ID');
+}
+
+// =========================================================================
+// NOTIFIKASI TRANSAKSI & MODAL VERIFIKASI / RESI / CETAK SLIP
+// =========================================================================
+const isNotifDropdownOpen = ref(false);
+const isOrderManageModalOpen = ref(false);
+const managingOrder = ref(null);
+const isPrintReceiptModalOpen = ref(false);
+const printingOrder = ref(null);
+
+const resiForm = ref({
+  jasa_pengiriman: 'J&T Express - Regular',
+  no_resi: '',
+  status_pengiriman: 'Dikirim',
+});
+
+const unreadNotifCount = computed(() => {
+  return recentOrders.value.filter((o) => !o.is_notif_read).length;
+});
+
+function toggleNotifDropdown() {
+  isNotifDropdownOpen.value = !isNotifDropdownOpen.value;
+}
+
+async function markAllNotificationsRead() {
+  recentOrders.value.forEach((o) => {
+    o.is_notif_read = true;
+  });
+  try {
+    await fetch('/api/admin/transactions/notifications/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({}),
+    });
+  } catch (e) {
+    console.warn('Error marking notifications read:', e);
+  }
+  emit('toast', 'Semua notifikasi transaksi ditandai sudah dibaca.');
+}
+
+async function openOrderFromNotif(order) {
+  isNotifDropdownOpen.value = false;
+  order.is_notif_read = true;
+  if (order.db_id) {
+    try {
+      await fetch('/api/admin/transactions/notifications/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ id_transaksi: order.db_id }),
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
+  handleOrderAction(order);
 }
 
 // =========================================================================
@@ -1763,7 +2394,6 @@ function saveFlashSaleItem() {
   isAddModalOpen.value = false;
 }
 
-// Master Switch Toggle Flash Sale
 function toggleFlashSaleMaster() {
   const nextVal = !props.isFlashSaleActive;
   emit('update:isFlashSaleActive', nextVal);
@@ -1773,6 +2403,7 @@ function toggleFlashSaleMaster() {
 function selectTab(tabKey) {
   currentTab.value = tabKey;
   isMobileSidebarOpen.value = false;
+  isNotifDropdownOpen.value = false;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1785,11 +2416,11 @@ const tabTitle = computed(() => {
     'rating': 'Kelola Rating & Ulasan Bintang',
     'instagram': 'Kelola Feed Instagram & Social Hub',
     'video': 'Kelola Video & Reels Tutorial',
-    'products': 'Kelola Produk & Katalog',
+    'products': 'Kelola Produk & Katalog (Database Barang)',
     'categories': 'Kelola Kategori Produk',
     'stock': 'Stok & Inventori Barang',
-    'orders': 'Pesanan & Pembayaran',
-    'shipping': 'Pengiriman & Resi Kurir',
+    'orders': 'Transaksi, Verifikasi Pembayaran & Slip Resi',
+    'shipping': 'Penyiapan, Pengiriman & Input Resi Manual',
     'customers': 'Data Pelanggan & WhatsApp Member',
     'vouchers': 'Voucher & Diskon Promo',
   };
@@ -1823,86 +2454,402 @@ function toggleSlideStatus(slide) {
   emit('toast', `Status banner "${slide.title}" diubah menjadi ${slide.active ? 'Aktif' : 'Nonaktif'}`);
 }
 
-// 2. Data Pesanan Terbaru
+// =========================================================================
+// 2. DATA PESANAN & TRANSAKSI (TERSINKRONISASI DENGAN DATABASE TRANSAKSI)
+// =========================================================================
 const recentOrders = ref([
   {
-    id: 'ORD-2026-9081',
-    buyer: 'Kayla Anindita',
-    email: 'kayla.anindita@example.com',
-    phone: '812-4567-8910',
-    waNumber: '6281245678910',
-    items: 'Koafy Crystal Butterbalm Duo',
-    shade: 'Rosewood & Mauve',
-    total: 288600,
-    status: 'Lunas (Perlu Dikirim)',
-    statusClass: 'orange',
-    courier: 'J&T Express',
-    trackingNo: 'JT981245102',
-    date: '17 Nov 2026, 08:30',
-  },
-  {
-    id: 'ORD-2026-9080',
-    buyer: 'Siti Rahmadani',
-    email: 'siti.r@example.com',
-    phone: '821-9988-1234',
-    waNumber: '6282199881234',
-    items: 'Koafy Velvet Lip & Brush Set',
-    shade: 'Rosewood Matte',
-    total: 175000,
-    status: 'Sedang Dikirim',
-    statusClass: 'blue',
-    courier: 'SiCepat BEST',
-    trackingNo: 'SI881203491',
-    date: '17 Nov 2026, 07:15',
-  },
-  {
-    id: 'ORD-2026-9079',
-    buyer: 'Amanda Clarissa',
-    email: 'amanda.c@example.com',
-    phone: '878-1122-3344',
-    waNumber: '6287811223344',
-    items: 'HSK Secret Glow Cushion SPF 50',
-    shade: '02 Neutral Rose',
-    total: 185000,
-    status: 'Selesai',
-    statusClass: 'green',
-    courier: 'J&T Express',
-    trackingNo: 'JT980112348',
-    date: '16 Nov 2026, 21:40',
-  },
-  {
-    id: 'ORD-2026-9078',
-    buyer: 'Nadia Putri',
-    email: 'nadia.putri@example.com',
-    phone: '813-7766-5544',
-    waNumber: '6281377665544',
-    items: 'Koafy Soft-Square Multi Balm Trio',
-    shade: '3 Shades Set',
-    total: 210000,
-    status: 'Menunggu Verifikasi',
+    db_id: 1,
+    id: 'INV/20261124/KFY/8492',
+    buyer: 'Siti Rahma',
+    email: 'siti.rahma@example.com',
+    phone: '81234567890',
+    waNumber: '6281234567890',
+    alamat: 'Jl. Senopati No. 45, RT 02 / RW 05, Kebayoran Baru, Jakarta Selatan',
+    kecamatan: 'Kebayoran Baru, Jakarta Selatan',
+    kode_pos: '12110',
+    items: 'Koafy Crystal Butterbalm Tint Duo (1x), HSK Secret Pink Radiance Cream (1x)',
+    items_summary: 'Koafy Crystal Butterbalm Tint Duo (1x), HSK Secret Pink Radiance Cream (1x)',
+    shade: '01 Rosewood Dew',
+    total_qty: 2,
+    ongkir: 15000,
+    diskon_voucer: 25000,
+    voucer: 'BEAUTY2027',
+    total: 463600,
+    metode_pembayaran: 'Transfer Bank BCA (No. Rekening)',
+    status: 'Menunggu Verifikasi Admin',
     statusClass: 'pink',
-    courier: 'GoSend Instant',
-    trackingNo: 'GS1290341',
-    date: '16 Nov 2026, 19:20',
+    courier: 'J&T Express - Regular',
+    trackingNo: 'BELUM DIINPUT',
+    status_pengiriman: 'Menunggu Konfirmasi Pembayaran',
+    nama_rekening_pengirim: 'Siti Rahma',
+    bank_pengirim: 'BCA',
+    bukti_transfer: '/images/product-butterbalm-duo.jpg',
+    is_notif_read: false,
+    date: '24 Nov 2026',
+  },
+  {
+    db_id: 2,
+    id: 'INV/20261124/KFY/8491',
+    buyer: 'Kayla Anindita',
+    email: 'kayla.anindita@gmail.com',
+    phone: '81294827100',
+    waNumber: '6281294827100',
+    alamat: 'Jl. Kemang Raya No. 18B, Bangka, Jakarta Selatan',
+    kecamatan: 'Mampang Prapatan, Jakarta Selatan',
+    kode_pos: '12730',
+    items: 'Koafy Crystal Butterbalm Tint Duo (2x)',
+    items_summary: 'Koafy Crystal Butterbalm Tint Duo (2x)',
+    shade: '02 Mauve Petal',
+    total_qty: 2,
+    ongkir: 25000,
+    diskon_voucer: 0,
+    total: 338020,
+    metode_pembayaran: 'BCA Virtual Account',
+    status: 'Pembayaran Berhasil',
+    statusClass: 'green',
+    courier: 'SiCepat BEST (Next Day)',
+    trackingNo: 'BELUM DIINPUT',
+    status_pengiriman: 'Sedang Dikemas / Siap Kirim',
+    is_notif_read: false,
+    date: '24 Nov 2026',
   },
 ]);
 
 const filteredOrders = computed(() => {
-  if (orderFilter.value === 'paid') {
-    return recentOrders.value.filter((o) => o.status.includes('Lunas'));
+  let list = recentOrders.value;
+  if (orderFilter.value === 'pending') {
+    list = list.filter((o) =>
+      o.status.toLowerCase().includes('menunggu') || o.status.toLowerCase().includes('verifikasi')
+    );
+  } else if (orderFilter.value === 'paid') {
+    list = list.filter((o) =>
+      o.status.toLowerCase().includes('berhasil') || o.status.toLowerCase().includes('lunas')
+    );
+  } else if (orderFilter.value === 'shipping') {
+    list = list.filter((o) =>
+      (o.status_pengiriman && o.status_pengiriman.toLowerCase().includes('dikirim')) ||
+      (o.trackingNo && o.trackingNo !== 'BELUM DIINPUT')
+    );
   }
-  if (orderFilter.value === 'shipping') {
-    return recentOrders.value.filter((o) => o.status.includes('Dikirim'));
+
+  if (adminSearch.value.trim()) {
+    const q = adminSearch.value.trim().toLowerCase();
+    list = list.filter(
+      (o) =>
+        o.id.toLowerCase().includes(q) ||
+        o.buyer.toLowerCase().includes(q) ||
+        (o.trackingNo && o.trackingNo.toLowerCase().includes(q))
+    );
   }
-  return recentOrders.value;
+  return list;
 });
 
 function handleOrderAction(order) {
-  emit('toast', `Membuka detail pesanan ${order.id} untuk ${order.buyer}`);
+  managingOrder.value = order;
+  order.is_notif_read = true;
+  resiForm.value = {
+    jasa_pengiriman: order.courier || 'J&T Express - Regular',
+    no_resi: order.trackingNo && order.trackingNo !== 'BELUM DIINPUT' ? order.trackingNo : '',
+    status_pengiriman: order.status_pengiriman || 'Sedang Dikemas / Siap Kirim',
+  };
+  isOrderManageModalOpen.value = true;
+}
+
+async function markPaymentSuccess(order) {
+  order.status = 'Pembayaran Berhasil';
+  order.status_pembayaran = 'Pembayaran Berhasil';
+  order.statusClass = 'green';
+  order.is_notif_read = true;
+  if (!order.status_pengiriman || order.status_pengiriman.includes('Menunggu')) {
+    order.status_pengiriman = 'Sedang Dikemas / Siap Kirim';
+    resiForm.value.status_pengiriman = 'Sedang Dikemas / Siap Kirim';
+  }
+
+  if (order.db_id) {
+    try {
+      await fetch(`/api/admin/transactions/${order.db_id}/payment-status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ status_pembayaran: 'Pembayaran Berhasil' }),
+      });
+    } catch (e) {
+      console.warn('Error updating payment status:', e);
+    }
+  }
+
+  // Update localStorage koafy_orders so customer profile page reflects Lunas status
+  try {
+    const localOrders = JSON.parse(localStorage.getItem('koafy_orders') || '[]');
+    const idx = localOrders.findIndex((o) => o.id === order.id);
+    if (idx > -1) {
+      localOrders[idx].status = 'processing';
+      localOrders[idx].statusLabel = 'Pembayaran Berhasil (Diproses)';
+      localOrders[idx].statusClass = 'status-processing';
+      localStorage.setItem('koafy_orders', JSON.stringify(localOrders));
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  emit('toast', `Status pembayaran ${order.id} berhasil diubah menjadi: PEMBAYARAN BERHASIL!`);
+}
+
+async function saveManualResi(order) {
+  if (!resiForm.value.no_resi.trim()) {
+    emit('toast', 'Silakan ketik nomor resi pengiriman secara manual terlebih dahulu.');
+    return;
+  }
+
+  order.courier = resiForm.value.jasa_pengiriman;
+  order.trackingNo = resiForm.value.no_resi.trim().toUpperCase();
+  order.status_pengiriman = resiForm.value.status_pengiriman || 'Dikirim';
+  order.is_notif_read = true;
+
+  if (order.db_id) {
+    try {
+      await fetch(`/api/admin/transactions/${order.db_id}/shipment`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          jasa_pengiriman: order.courier,
+          no_resi: order.trackingNo,
+          status_pengiriman: order.status_pengiriman,
+        }),
+      });
+    } catch (e) {
+      console.warn('Error updating shipment resi:', e);
+    }
+  }
+
+  // Sync with customer localStorage orders
+  try {
+    const localOrders = JSON.parse(localStorage.getItem('koafy_orders') || '[]');
+    const idx = localOrders.findIndex((o) => o.id === order.id);
+    if (idx > -1) {
+      localOrders[idx].courier = order.courier;
+      localOrders[idx].trackingNumber = order.trackingNo;
+      localOrders[idx].status = 'shipping';
+      localOrders[idx].statusLabel = `Dikirim (Resi: ${order.trackingNo})`;
+      localStorage.setItem('koafy_orders', JSON.stringify(localOrders));
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  emit('toast', `Nomor resi manual ${order.trackingNo} (${order.courier}) berhasil disimpan ke database!`);
+}
+
+function formatProductSlug(name) {
+  return String(name || 'produk-koafy')
+    .replace(/\([0-9]+x\)/gi, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 28);
+}
+
+function isOrderPaidStatus(statusText) {
+  const s = String(statusText || '').toLowerCase();
+  return s.includes('berhasil') || s.includes('lunas') || s.includes('terbayar') || s.includes('dikirim') || s.includes('selesai');
+}
+
+function openPrintReceiptModal(order) {
+  printingOrder.value = order;
+  isPrintReceiptModalOpen.value = true;
+}
+
+function triggerPrintSlip() {
+  const slipEl = document.getElementById('printable-resi-slip');
+  if (!slipEl) {
+    window.print();
+    return;
+  }
+
+  const printWin = window.open('', '_blank', 'width=460,height=680');
+  if (!printWin) {
+    window.print();
+    return;
+  }
+
+  printWin.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Packing Slip - ${printingOrder.value?.id || 'HSK SECRET'}</title>
+  <style>
+    @page {
+      size: 100mm 150mm;
+      margin: 0;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100mm;
+      min-height: 150mm;
+      margin: 0;
+      padding: 0;
+      background: #FFFFFF;
+      color: #111111;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-print-color-adjust: exact;
+    }
+    .packing-slip-100x150 {
+      width: 100mm;
+      min-height: 150mm;
+      padding: 7mm 7mm;
+      background: #FFFFFF;
+      color: #111111;
+    }
+    .ps-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .ps-brand-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: #000000;
+      letter-spacing: 0.01em;
+      line-height: 1.15;
+    }
+    .ps-doc-type {
+      font-size: 12px;
+      font-weight: 700;
+      color: #000000;
+      margin-top: 4px;
+      letter-spacing: 0.02em;
+    }
+    .ps-header-right {
+      text-align: right;
+    }
+    .ps-order-code {
+      font-size: 13px;
+      font-weight: 700;
+      color: #000000;
+      line-height: 1.2;
+    }
+    .ps-order-date {
+      font-size: 11px;
+      color: #555555;
+      margin-top: 4px;
+    }
+    .ps-divider-solid {
+      border-top: 1.5px solid #111111;
+      margin: 11px 0;
+    }
+    .ps-recipient-section {
+      margin-bottom: 14px;
+    }
+    .ps-recipient-label {
+      font-size: 11px;
+      color: #555555;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 4px;
+    }
+    .ps-recipient-name-phone {
+      font-size: 13px;
+      color: #000000;
+      margin-bottom: 5px;
+    }
+    .ps-recipient-address {
+      font-size: 12.5px;
+      color: #111111;
+      line-height: 1.42;
+    }
+    .ps-products-table {
+      width: 100%;
+    }
+    .ps-prod-thead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #222222;
+      border-bottom: 1px solid #222222;
+      padding: 6px 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #000000;
+    }
+    .ps-col-qty {
+      width: 34px;
+      text-align: center;
+    }
+    .ps-prod-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 9px 0;
+      border-bottom: 1px solid #E5E7EB;
+      gap: 10px;
+    }
+    .ps-prod-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .ps-prod-title {
+      font-size: 12.5px;
+      color: #111111;
+      line-height: 1.35;
+    }
+    .ps-prod-variant {
+      font-size: 11px;
+      color: #666666;
+      margin-top: 3px;
+    }
+    .ps-prod-qty {
+      width: 34px;
+      text-align: center;
+      font-size: 12.5px;
+      color: #111111;
+      flex-shrink: 0;
+    }
+    .ps-footer {
+      border-top: 1px dashed #888888;
+      margin-top: 10px;
+      padding-top: 9px;
+    }
+    .ps-footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ps-paid-status {
+      font-size: 13px;
+      font-weight: 700;
+      color: #000000;
+    }
+    .ps-courier-name {
+      font-size: 12.5px;
+      color: #111111;
+    }
+    .ps-resi-line {
+      font-size: 12.5px;
+      color: #111111;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="packing-slip-100x150">${slipEl.innerHTML}</div>
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 150);
+    };
+  <\/script>
+</body>
+</html>`);
+  printWin.document.close();
 }
 
 // =========================================================================
-// 3. DATA PRODUK & KATALOG (REF GAMBAR BARU MANAJEMEN PRODUK & KATALOG)
+// 3. DATA PRODUK & KATALOG (DATABASE DATA BARANG + 4 GAMBAR 800x800 + SHADES)
 // =========================================================================
 const productSearchQuery = ref('');
 const selectedCategoryFilter = ref('all');
@@ -1926,8 +2873,60 @@ const productForm = ref({
   status: 'ACTIVE',
   tglMasuk: '15-08-2026',
   tglExpired: '15-08-2029',
-  image: '/images/categories/serum-conseler.png',
+  deskripsi_barang: '',
+  kandungan_ingredients: '',
+  manfaat_utama: '',
+  cara_pakai: '',
+  rekomendasi_tipe_kulit: 'Semua Jenis Kulit',
+  image: '/images/product-butterbalm-duo.jpg',
+  gambar_produk_1: '/images/product-butterbalm-duo.jpg',
+  gambar_produk_2: '/images/product-velvet-lip.jpg',
+  gambar_produk_3: '/images/product-multibalm-trio.jpg',
+  gambar_produk_4: '/images/product-pink-cream.jpg',
+  shades: [],
 });
+
+function handleProductImageUpload(event, slot) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    productForm.value[`gambar_produk_${slot}`] = e.target.result;
+    if (slot === 1) {
+      productForm.value.image = e.target.result;
+    }
+    emit('toast', `Gambar Produk ${slot} (Rasio 1:1) berhasil dimuat`);
+  };
+  reader.readAsDataURL(file);
+}
+
+function addShadeRow() {
+  if (!Array.isArray(productForm.value.shades)) {
+    productForm.value.shades = [];
+  }
+  productForm.value.shades.push({
+    nama_shade: '',
+    kode_warna: '#C95B73',
+    gambar_produk: productForm.value.gambar_produk_1 || '/images/product-butterbalm-duo.jpg',
+  });
+}
+
+function removeShadeRow(idx) {
+  productForm.value.shades.splice(idx, 1);
+}
+
+function handleShadeImageUpload(event, idx) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if (productForm.value.shades[idx]) {
+      productForm.value.shades[idx].gambar_produk = e.target.result;
+      emit('toast', `Gambar varian shade #${idx + 1} berhasil dimuat`);
+    }
+  };
+  reader.readAsDataURL(file);
+}
 
 // Hitung otomatis masa berlaku dan status expired
 function calculateExpiry(expiredDateStr) {
@@ -1940,7 +2939,7 @@ function calculateExpiry(expiredDateStr) {
   const expYear = parseInt(parts[2], 10);
   const expDate = new Date(expYear, expMonth, expDay);
 
-  const anchorDate = new Date(2026, 7, 15); // Anchor date: 15-08-2026
+  const anchorDate = new Date(2026, 7, 15);
   const diffTime = expDate - anchorDate;
 
   if (diffTime <= 0) {
@@ -1979,7 +2978,7 @@ function calculateExpiry(expiredDateStr) {
 
 const catalogProducts = ref([
   {
-    id: 'p-001',
+    id: 1,
     name: 'Koafy Rose Hydrating Serum 50ml',
     sku: 'KFY-SER-001',
     category: 'Skincare',
@@ -1994,125 +2993,8 @@ const catalogProducts = ref([
     masaBerlaku: '3 Thn, 0 Bln, 0 Hari',
     statusExpired: 'SAFE',
     image: '/images/categories/serum-conseler.png',
-  },
-  {
-    id: 'p-002',
-    name: 'Skintific 5X Ceramide Barrier Moisture Gel 50g',
-    sku: 'SKN-GEL-002',
-    category: 'Skincare',
-    normalPrice: 189000,
-    normalPriceFormatted: 'Rp 189.000',
-    discountPrice: 149000,
-    discountPriceFormatted: 'Rp 149.000',
-    stock: 82,
-    status: 'ACTIVE',
-    tglMasuk: '15-08-2026',
-    tglExpired: '15-08-2028',
-    masaBerlaku: '2 Thn, 0 Bln, 0 Hari',
-    statusExpired: 'SAFE',
-    image: '/images/banner-healthy-barrier.jpg',
-  },
-  {
-    id: 'p-003',
-    name: 'Rose All Day Velvet Lip Whip - Soft Mauve',
-    sku: 'RAD-LIP-003',
-    category: 'Makeup',
-    normalPrice: 129000,
-    normalPriceFormatted: 'Rp 129.000',
-    discountPrice: 99000,
-    discountPriceFormatted: 'Rp 99.000',
-    stock: 24,
-    status: 'ACTIVE',
-    tglMasuk: '15-08-2026',
-    tglExpired: '15-08-2027',
-    masaBerlaku: '1 Thn, 0 Bln, 0 Hari',
-    statusExpired: 'WARNING',
-    image: '/images/product-lip-velvet.jpg',
-  },
-  {
-    id: 'p-004',
-    name: 'Somethinc Niacinamide + Moisture Sabi Beet Serum 20ml',
-    sku: 'SMT-SER-004',
-    category: 'Skincare',
-    normalPrice: 115000,
-    normalPriceFormatted: 'Rp 115.000',
-    discountPrice: 89000,
-    discountPriceFormatted: 'Rp 89.000',
-    stock: 5,
-    status: 'ACTIVE',
-    tglMasuk: '15-08-2026',
-    tglExpired: '15-03-2027',
-    masaBerlaku: '0 Thn, 7 Bln, 0 Hari',
-    statusExpired: 'DANGER',
-    image: '/images/categories/serum-conseler.png',
-  },
-  {
-    id: 'p-005',
-    name: 'Laneige Water Sleeping Mask EX 70ml',
-    sku: 'LNG-MSK-005',
-    category: 'Skincare',
-    normalPrice: 450000,
-    normalPriceFormatted: 'Rp 450.000',
-    discountPrice: 385000,
-    discountPriceFormatted: 'Rp 385.000',
-    stock: 18,
-    status: 'ACTIVE',
-    tglMasuk: '15-08-2026',
-    tglExpired: '15-08-2026',
-    masaBerlaku: '0 Thn, 0 Bln, 0 Hari',
-    statusExpired: 'EXPIRED',
-    image: '/images/categories/masker.png',
-  },
-  {
-    id: 'p-006',
-    name: 'COSRX Low pH Good Morning Gel Cleanser 150ml',
-    sku: 'COS-CLN-006',
-    category: 'Skincare',
-    normalPrice: 155000,
-    normalPriceFormatted: 'Rp 155.000',
-    discountPrice: 119000,
-    discountPriceFormatted: 'Rp 119.000',
-    stock: 60,
-    status: 'ACTIVE',
-    tglMasuk: '15-08-2026',
-    tglExpired: '10-05-2026',
-    masaBerlaku: '0 Thn, 0 Bln, 0 Hari',
-    statusExpired: 'EXPIRED',
-    image: '/images/categories/cleanser.png',
-  },
-  {
-    id: 'p-007',
-    name: 'Koafy Botanical Hair Repair Oil 100ml',
-    sku: 'KFY-HIR-007',
-    category: 'Hair Care',
-    normalPrice: 249000,
-    normalPriceFormatted: 'Rp 249.000',
-    discountPrice: 215000,
-    discountPriceFormatted: 'Rp 215.000',
-    stock: 30,
-    status: 'ACTIVE',
-    tglMasuk: '15-08-2026',
-    tglExpired: '01-12-2029',
-    masaBerlaku: '3 Thn, 3 Bln, 16 Hari',
-    statusExpired: 'SAFE',
-    image: '/images/product-butterbalm-1.jpg',
-  },
-  {
-    id: 'p-008',
-    name: 'Koafy Silk Glow Body Lotion 250ml',
-    sku: 'KFY-BDY-008',
-    category: 'Body Care',
-    normalPrice: 199000,
-    normalPriceFormatted: 'Rp 199.000',
-    discountPrice: 169000,
-    discountPriceFormatted: 'Rp 169.000',
-    stock: 40,
-    status: 'ACTIVE',
-    tglMasuk: '15-08-2026',
-    tglExpired: '20-01-2027',
-    masaBerlaku: '0 Thn, 5 Bln, 5 Hari',
-    statusExpired: 'DANGER',
-    image: '/images/product-butterbalm-2.jpg',
+    gambar_produk_1: '/images/categories/serum-conseler.png',
+    shades: [],
   },
 ]);
 
@@ -2120,7 +3002,6 @@ const catalogProducts = ref([
 const filteredCatalogProducts = computed(() => {
   let list = [...catalogProducts.value];
 
-  // 1. Search filter
   const q = productSearchQuery.value.trim().toLowerCase();
   if (q) {
     list = list.filter(
@@ -2131,12 +3012,10 @@ const filteredCatalogProducts = computed(() => {
     );
   }
 
-  // 2. Category filter
   if (selectedCategoryFilter.value !== 'all') {
     list = list.filter((p) => p.category === selectedCategoryFilter.value);
   }
 
-  // 3. Sorting
   const field = sortField.value;
   const isAsc = sortAsc.value;
   list.sort((a, b) => {
@@ -2182,16 +3061,36 @@ function handleProductSort(field) {
   }
 }
 
-function toggleProductActive(prod) {
+async function toggleProductActive(prod) {
   prod.status = prod.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+  if (typeof prod.id === 'number') {
+    try {
+      await fetch(`/api/admin/products/${prod.id}/toggle-status`, {
+        method: 'PATCH',
+        headers: { Accept: 'application/json' },
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
   emit('toast', `Status produk ${prod.name} diubah menjadi ${prod.status}`);
 }
 
-function deleteCatalogProduct(prod) {
+async function deleteCatalogProduct(prod) {
+  if (typeof prod.id === 'number') {
+    try {
+      await fetch(`/api/admin/products/${prod.id}`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
   const idx = catalogProducts.value.findIndex((p) => p.id === prod.id);
   if (idx > -1) {
     catalogProducts.value.splice(idx, 1);
-    emit('toast', `Produk "${prod.name}" berhasil dihapus dari katalog!`);
+    emit('toast', `Produk "${prod.name}" berhasil dihapus dari database!`);
   }
 }
 
@@ -2200,21 +3099,42 @@ function openAddProductModal() {
   productForm.value = {
     name: '',
     sku: `KFY-${Date.now().toString().slice(-4)}`,
-    category: 'Skincare',
+    category: 'Makeup',
     normalPriceFormatted: 'Rp 200.000',
     discountPriceFormatted: 'Rp 160.000',
-    stock: 20,
+    stock: 25,
     status: 'ACTIVE',
-    tglMasuk: '15-08-2026',
-    tglExpired: '15-08-2029',
-    image: '/images/categories/cleanser.png',
+    tglMasuk: '24-11-2026',
+    tglExpired: '24-11-2029',
+    deskripsi_barang: '',
+    kandungan_ingredients: '',
+    manfaat_utama: '',
+    cara_pakai: '',
+    rekomendasi_tipe_kulit: 'Semua Jenis Kulit',
+    image: '/images/product-butterbalm-duo.jpg',
+    gambar_produk_1: '/images/product-butterbalm-duo.jpg',
+    gambar_produk_2: '/images/product-velvet-lip.jpg',
+    gambar_produk_3: '/images/product-multibalm-trio.jpg',
+    gambar_produk_4: '/images/product-pink-cream.jpg',
+    shades: [
+      { nama_shade: '01 Rosewood Dew', kode_warna: '#C95B73', gambar_produk: '/images/product-butterbalm-duo.jpg' },
+    ],
   };
   isProductModalOpen.value = true;
 }
 
 function openEditProductModal(prod) {
   editingProduct.value = prod;
-  productForm.value = { ...prod };
+  productForm.value = {
+    ...prod,
+    gambar_produk_1: prod.gambar_produk_1 || prod.image || '/images/product-butterbalm-duo.jpg',
+    gambar_produk_2: prod.gambar_produk_2 || '',
+    gambar_produk_3: prod.gambar_produk_3 || '',
+    gambar_produk_4: prod.gambar_produk_4 || '',
+    shades: Array.isArray(prod.shades)
+      ? prod.shades.map((s) => ({ ...s }))
+      : [],
+  };
   isProductModalOpen.value = true;
 }
 
@@ -2223,18 +3143,60 @@ function openViewProductModal(prod) {
   isProductViewModalOpen.value = true;
 }
 
-function saveProductForm() {
+async function saveProductForm() {
   if (!productForm.value.name || !productForm.value.sku) return;
 
   const expiryInfo = calculateExpiry(productForm.value.tglExpired);
+  const numNormal = parseInt(String(productForm.value.normalPriceFormatted).replace(/[^0-9]/g, ''), 10) || 0;
+  const numDiscount = parseInt(String(productForm.value.discountPriceFormatted).replace(/[^0-9]/g, ''), 10) || 0;
 
-  // Parse numeric prices if needed for sorting
-  const numNormal = parseInt(productForm.value.normalPriceFormatted.replace(/[^0-9]/g, ''), 10) || 0;
-  const numDiscount = parseInt(productForm.value.discountPriceFormatted.replace(/[^0-9]/g, ''), 10) || 0;
+  const payload = {
+    ...productForm.value,
+    nama_barang: productForm.value.name,
+    kategori_produk: productForm.value.category,
+    harga_normal: numNormal,
+    harga_promo: numDiscount,
+    stok: productForm.value.stock,
+    tanggal_masuk: productForm.value.tglMasuk,
+    tanggal_expired: productForm.value.tglExpired,
+    image: productForm.value.gambar_produk_1 || productForm.value.image,
+  };
+
+  try {
+    const isEdit = editingProduct.value && typeof editingProduct.value.id === 'number';
+    const url = isEdit ? `/api/admin/products/${editingProduct.value.id}` : '/api/admin/products';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success && data.product) {
+      const savedProd = {
+        ...data.product,
+        masaBerlaku: expiryInfo.durationText,
+        statusExpired: expiryInfo.statusExpired,
+      };
+      if (editingProduct.value) {
+        Object.assign(editingProduct.value, savedProd);
+      } else {
+        catalogProducts.value.unshift(savedProd);
+      }
+      isProductModalOpen.value = false;
+      emit('toast', data.message || 'Data barang berhasil disimpan ke database!');
+      return;
+    }
+  } catch (e) {
+    console.warn('Error saving product to backend:', e);
+  }
 
   if (editingProduct.value) {
     Object.assign(editingProduct.value, {
       ...productForm.value,
+      image: productForm.value.gambar_produk_1 || productForm.value.image,
       normalPrice: numNormal,
       discountPrice: numDiscount,
       masaBerlaku: expiryInfo.durationText,
@@ -2245,6 +3207,7 @@ function saveProductForm() {
     catalogProducts.value.unshift({
       id: `p-${Date.now()}`,
       ...productForm.value,
+      image: productForm.value.gambar_produk_1 || productForm.value.image,
       normalPrice: numNormal,
       discountPrice: numDiscount,
       masaBerlaku: expiryInfo.durationText,
@@ -2273,7 +3236,7 @@ const vouchersList = ref([
   { code: 'NEWBIE', amount: 'Gratis Ongkir', minSpend: 'Rp 100.000', claimed: 210, quota: 500 },
 ]);
 
-// 6. Data Pelanggan (dengan No WhatsApp dari form register)
+// 6. Data Pelanggan
 const customersList = ref([
   {
     id: 'CUST-001',
@@ -2286,38 +3249,53 @@ const customersList = ref([
     orderCount: 4,
     joinDate: '12 Nov 2026',
   },
-  {
-    id: 'CUST-002',
-    name: 'Siti Rahmadani',
-    email: 'siti.r@example.com',
-    phone: '821-9988-1234',
-    waNumber: '6282199881234',
-    tier: 'Gold Member',
-    totalSpent: 620000,
-    orderCount: 2,
-    joinDate: '14 Nov 2026',
-  },
-  {
-    id: 'CUST-003',
-    name: 'Amanda Clarissa',
-    email: 'amanda.c@example.com',
-    phone: '878-1122-3344',
-    waNumber: '6287811223344',
-    tier: 'Rose VIP Member',
-    totalSpent: 1550000,
-    orderCount: 5,
-    joinDate: '10 Nov 2026',
-  },
-  {
-    id: 'CUST-004',
-    name: 'Nadia Putri',
-    email: 'nadia.putri@example.com',
-    phone: '813-7766-5544',
-    waNumber: '6281377665544',
-    tier: 'Silver Member',
-    totalSpent: 210000,
-    orderCount: 1,
-    joinDate: '16 Nov 2026',
-  },
 ]);
+
+onMounted(async () => {
+  const token = localStorage.getItem('koafy_admin_jwt') || '';
+  const headers = {
+    Accept: 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  // 1. Fetch Transaksi & Notifikasi dari Database
+  try {
+    const resTrans = await fetch('/api/transactions', { headers });
+    const dataTrans = await resTrans.json();
+    if (resTrans.ok && dataTrans.success && Array.isArray(dataTrans.transactions) && dataTrans.transactions.length > 0) {
+      recentOrders.value = dataTrans.transactions;
+    }
+  } catch (e) {
+    console.warn('Error fetching transactions:', e);
+  }
+
+  // 2. Fetch Data Barang & Varian Shade dari Database
+  try {
+    const resProd = await fetch('/api/products', { headers });
+    const dataProd = await resProd.json();
+    if (resProd.ok && dataProd.success && Array.isArray(dataProd.products) && dataProd.products.length > 0) {
+      catalogProducts.value = dataProd.products.map((p) => {
+        const exp = calculateExpiry(p.tglExpired);
+        return {
+          ...p,
+          masaBerlaku: exp.durationText,
+          statusExpired: exp.statusExpired,
+        };
+      });
+    }
+  } catch (e) {
+    console.warn('Error fetching products:', e);
+  }
+
+  // 3. Fetch Data Pelanggan dari Database
+  try {
+    const resCust = await fetch('/api/admin/customers', { headers });
+    const dataCust = await resCust.json();
+    if (resCust.ok && dataCust.success && Array.isArray(dataCust.customers) && dataCust.customers.length > 0) {
+      customersList.value = dataCust.customers;
+    }
+  } catch (e) {
+    console.warn('Error fetching customers:', e);
+  }
+});
 </script>

@@ -2,7 +2,7 @@
   <div>
     <!-- Header & Top Announcement Bar (Hidden on Auth & Admin view) -->
     <NavbarHeader
-      v-if="currentView !== 'auth' && currentView !== 'admin'"
+      v-if="currentView !== 'auth' && currentView !== 'admin' && currentView !== 'admin-login'"
       v-model:activeNav="activeNav"
       :user="currentUser"
       :wishlist-count="wishlistItems.length"
@@ -15,7 +15,7 @@
       @toast="showToast"
     />
 
-    <!-- Main Content Area: Home | Detail | Auth | Admin -->
+    <!-- Main Content Area: Home | Detail | Auth | AdminLogin | Admin -->
     <main>
       <!-- 1. HOME VIEW (http://127.0.0.1:8000/) -->
       <template v-if="currentView === 'home'">
@@ -79,7 +79,7 @@
         />
       </template>
 
-      <!-- 3. AUTH VIEW (http://127.0.0.1:8000/login & http://127.0.0.1:8000/register) -->
+      <!-- 3B. AUTH VIEW (http://127.0.0.1:8000/login & http://127.0.0.1:8000/register) -->
       <template v-else-if="currentView === 'auth'">
         <AuthPage
           :initial-mode="authMode"
@@ -87,14 +87,25 @@
           @back-to-home="backToHome"
           @toast="showToast"
           @login-success="handleLoginSuccess"
+          @open-admin-login="openAdminLoginPage"
         />
       </template>
 
-      <!-- 4. ADMIN DASHBOARD VIEW (http://127.0.0.1:8000/admin) -->
+      <!-- 4A. ADMIN LOGIN VIEW (http://127.0.0.1:8000/login/admin) -->
+      <template v-else-if="currentView === 'admin-login'">
+        <AdminLoginPage
+          @back-to-home="backToHome"
+          @admin-login-success="handleAdminLoginSuccess"
+          @toast="showToast"
+        />
+      </template>
+
+      <!-- 4B. ADMIN DASHBOARD VIEW (http://127.0.0.1:8000/admin) -->
       <template v-else-if="currentView === 'admin'">
         <AdminDashboard
           v-model:is-flash-sale-active="isFlashSaleActive"
           @go-to-store="backToHome"
+          @admin-logout="handleAdminLogout"
           @toast="showToast"
         />
       </template>
@@ -146,14 +157,14 @@
 
     <!-- Site Footer (Hidden on Auth & Admin view) -->
     <SiteFooter
-      v-if="currentView !== 'auth' && currentView !== 'admin'"
+      v-if="currentView !== 'auth' && currentView !== 'admin' && currentView !== 'admin-login'"
       @navigate="handleFooterNavigate"
       @toast="showToast"
     />
 
     <!-- Slide-over Drawers (Hidden on Admin view) -->
     <SideDrawers
-      v-if="currentView !== 'admin'"
+      v-if="currentView !== 'admin' && currentView !== 'admin-login'"
       v-model:activeNav="activeNav"
       :active-drawer="activeDrawer"
       :wishlist-items="wishlistItems"
@@ -168,11 +179,13 @@
       @checkout="handleCheckout"
     />
 
-    <!-- Floating WhatsApp Chat CS Admin (Only on E-Commerce Storefront, hidden on admin & when drawer is open) -->
-    <FloatingWhatsAppChat
-      v-if="currentView !== 'admin' && !activeDrawer"
-      @toast="showToast"
-    />
+    <!-- Floating WhatsApp Chat CS Admin (Only on E-Commerce Storefront, hidden on admin & when wishlist/cart drawer is open) -->
+    <transition name="wa-widget-fade">
+      <FloatingWhatsAppChat
+        v-if="currentView !== 'admin' && currentView !== 'admin-login' && !activeDrawer"
+        @toast="showToast"
+      />
+    </transition>
 
     <!-- Toast Feedback -->
     <div id="koafy-toast" class="koafy-toast" :class="{ show: toastVisible }">
@@ -192,6 +205,7 @@ import ProductDetail from './components/ProductDetail.vue';
 import SiteFooter from './components/SiteFooter.vue';
 import SideDrawers from './components/SideDrawers.vue';
 import AuthPage from './components/AuthPage.vue';
+import AdminLoginPage from './components/AdminLoginPage.vue';
 import AdminDashboard from './components/AdminDashboard.vue';
 import AllProductsPage from './components/AllProductsPage.vue';
 import FloatingWhatsAppChat from './components/FloatingWhatsAppChat.vue';
@@ -218,7 +232,7 @@ watch(currentUser, (val) => {
 }, { deep: true });
 
 const activeNav = ref('home');
-const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin' | 'profile' | 'about' | 'checkout'
+const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin-login' | 'admin' | 'profile' | 'about' | 'checkout'
 const previousView = ref('home');
 const authMode = ref('login'); // 'login' | 'register'
 const checkoutSource = ref('cart'); // 'cart' | 'direct'
@@ -235,7 +249,9 @@ watch(isFlashSaleActive, (val) => {
 // Synchronize SPA view with window.location.pathname
 function syncRouteFromPath() {
   const path = window.location.pathname.toLowerCase();
-  if (path === '/admin' || path.startsWith('/admin/')) {
+  if (path === '/login/admin' || path === '/admin/login') {
+    currentView.value = 'admin-login';
+  } else if (path === '/admin' || path.startsWith('/admin/')) {
     currentView.value = 'admin';
   } else if (
     path === '/about' ||
@@ -385,7 +401,35 @@ function handleAuthSwitchMode(mode) {
   }
 }
 
+function openAdminLoginPage() {
+  currentView.value = 'admin-login';
+  if (window.location.pathname !== '/login/admin') {
+    window.history.pushState(null, '', '/login/admin');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleAdminLoginSuccess() {
+  currentView.value = 'admin';
+  if (window.location.pathname !== '/admin') {
+    window.history.pushState(null, '', '/admin');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleAdminLogout() {
+  localStorage.removeItem('koafy_admin_jwt');
+  localStorage.removeItem('koafy_admin_user');
+  showToast('Anda telah keluar dari sesi JWT Admin');
+  openAdminLoginPage();
+}
+
 function openAdminPage() {
+  const hasAdminJwt = !!localStorage.getItem('koafy_admin_jwt');
+  if (!hasAdminJwt && window.location.pathname === '/login/admin') {
+    openAdminLoginPage();
+    return;
+  }
   currentView.value = 'admin';
   if (window.location.pathname !== '/admin') {
     window.history.pushState(null, '', '/admin');
@@ -405,6 +449,7 @@ function openUserProfile(tab = 'addresses') {
 }
 
 function handleLogout() {
+  localStorage.removeItem('koafy_customer_jwt');
   currentUser.value = { ...defaultUser };
   showToast('Anda telah keluar dari akun');
   backToHome();
@@ -413,9 +458,12 @@ function handleLogout() {
 function handleLoginSuccess(user) {
   currentUser.value = {
     ...currentUser.value,
+    id: user.id || user.id_customer || currentUser.value.id,
+    id_customer: user.id_customer || user.id || currentUser.value.id_customer,
     name: user.name || 'Siti Rahma',
     email: user.email || 'siti.rahma@example.com',
-    phone: user.phone || currentUser.value.phone,
+    phone: user.phone || user.no_telpon || currentUser.value.phone,
+    birthDate: user.birthDate || user.tanggal_lahir || currentUser.value.birthDate,
   };
   showToast(`Selamat datang, ${user.name || 'Member Koafy'}! Membuka halaman akun Anda...`);
   openUserProfile('addresses');

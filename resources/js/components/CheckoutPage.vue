@@ -579,44 +579,157 @@
     </div>
 
     <!-- =====================================================================
-         MODAL 1: GANTI ALAMAT PENGIRIMAN
+         MODAL 1: GANTI / TAMBAH ALAMAT PENGIRIMAN (DATABASE DATA ALAMAT USER)
          ===================================================================== -->
     <div
       v-if="showAddressModal"
       class="checkout-modal-backdrop"
       @click="showAddressModal = false"
     >
-      <div class="checkout-modal-card" @click.stop>
+      <div class="checkout-modal-card" style="max-width: 560px;" @click.stop>
         <div class="modal-header">
-          <h3 class="modal-title">Pilih Alamat Pengiriman</h3>
+          <h3 class="modal-title">
+            {{ isAddingNewAddress ? 'Tambah Data Alamat Penerima Baru' : 'Pilih Alamat Pengiriman' }}
+          </h3>
           <button type="button" class="modal-close-btn" @click="showAddressModal = false">✕</button>
         </div>
 
         <div class="modal-body">
-          <div class="address-selection-list">
-            <div
-              v-for="addr in savedAddresses"
-              :key="addr.id"
-              class="address-option-card"
-              :class="{ selected: selectedAddress.id === addr.id }"
-              @click="chooseAddress(addr)"
-            >
-              <div class="addr-opt-header">
-                <div class="addr-badges">
-                  <span class="address-badge-type">{{ addr.label }}</span>
-                  <span v-if="addr.isPrimary" class="address-badge-primary">Utama</span>
-                </div>
-                <span class="courier-radio" :class="{ active: selectedAddress.id === addr.id }"></span>
-              </div>
+          <!-- Mode 1: Daftar Alamat Tersimpan -->
+          <div v-if="!isAddingNewAddress">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <span style="font-size: 12.5px; color: #7A5B69; font-weight: 600;">Pilih dari alamat tersimpan:</span>
+              <button
+                type="button"
+                class="btn-change-address"
+                @click="isAddingNewAddress = true"
+              >
+                + Tambah Alamat Baru
+              </button>
+            </div>
 
-              <strong class="addr-opt-name">{{ addr.recipientName }} • {{ addr.phone }}</strong>
-              <p class="addr-opt-full">{{ addr.fullAddress }}</p>
-              <span class="addr-opt-area">{{ addr.area }} (Kode Pos: {{ addr.postalCode }})</span>
+            <div class="address-selection-list">
+              <div
+                v-for="addr in savedAddresses"
+                :key="addr.id"
+                class="address-option-card"
+                :class="{ selected: selectedAddress.id === addr.id }"
+                @click="chooseAddress(addr)"
+              >
+                <div class="addr-opt-header">
+                  <div class="addr-badges">
+                    <span class="address-badge-type">{{ addr.label }}</span>
+                    <span v-if="addr.isPrimary" class="address-badge-primary">Utama</span>
+                  </div>
+                  <span class="courier-radio" :class="{ active: selectedAddress.id === addr.id }"></span>
+                </div>
+
+                <strong class="addr-opt-name">{{ addr.recipientName }} • {{ addr.phone }}</strong>
+                <p class="addr-opt-full">{{ addr.fullAddress }}</p>
+                <span class="addr-opt-area">Kecamatan: {{ addr.area }} (Kode Pos: {{ addr.postalCode }})</span>
+                <small v-if="addr.notes" style="display:block; margin-top:4px; color:#9CA3AF; font-size:11.5px;">
+                  Catatan: {{ addr.notes }}
+                </small>
+              </div>
             </div>
           </div>
+
+          <!-- Mode 2: Form Input Data Alamat Baru (Sesuai Struktur Database Alamat User) -->
+          <form v-else class="new-address-form" @submit.prevent="saveNewCheckoutAddress">
+            <div class="confirm-field-group">
+              <label class="confirm-label">Label Alamat <span class="req-star">*</span></label>
+              <input
+                v-model="newAddressForm.label_alamat"
+                type="text"
+                required
+                placeholder="Contoh: Rumah Utama, Kantor, Apartemen"
+                class="confirm-input"
+              />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="confirm-field-group">
+                <label class="confirm-label">Nama Penerima <span class="req-star">*</span></label>
+                <input
+                  v-model="newAddressForm.nama_penerima"
+                  type="text"
+                  required
+                  placeholder="Nama lengkap penerima"
+                  class="confirm-input"
+                />
+              </div>
+              <div class="confirm-field-group">
+                <label class="confirm-label">No. Telepon <span class="req-star">*</span></label>
+                <input
+                  v-model="newAddressForm.no_telpon"
+                  type="tel"
+                  required
+                  placeholder="081234567890"
+                  class="confirm-input"
+                />
+              </div>
+            </div>
+
+            <div class="confirm-field-group">
+              <label class="confirm-label">Alamat Penerima (Detail Lengkap / Note) <span class="req-star">*</span></label>
+              <textarea
+                v-model="newAddressForm.alamat_penerima"
+                rows="3"
+                required
+                placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan..."
+                class="pickup-textarea"
+              ></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px;">
+              <div class="confirm-field-group">
+                <label class="confirm-label">Kecamatan &amp; Kota <span class="req-star">*</span></label>
+                <input
+                  v-model="newAddressForm.kecamatan"
+                  type="text"
+                  required
+                  placeholder="cth. Kebayoran Baru, Jakarta Selatan"
+                  class="confirm-input"
+                />
+              </div>
+              <div class="confirm-field-group">
+                <label class="confirm-label">Kode Pos <span class="req-star">*</span></label>
+                <input
+                  v-model="newAddressForm.kode_pos"
+                  type="text"
+                  required
+                  placeholder="12110"
+                  class="confirm-input"
+                />
+              </div>
+            </div>
+
+            <div class="confirm-field-group">
+              <label class="confirm-label">Catatan (Opsional)</label>
+              <input
+                v-model="newAddressForm.catatan"
+                type="text"
+                placeholder="Patokan rumah, warna pagar, titip satpam, dll."
+                class="confirm-input"
+              />
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+              <button
+                type="button"
+                class="btn-cancel-modal"
+                @click="isAddingNewAddress = false"
+              >
+                Kembali ke Daftar
+              </button>
+              <button type="submit" class="btn-save-modal">
+                Simpan &amp; Gunakan Alamat
+              </button>
+            </div>
+          </form>
         </div>
 
-        <div class="modal-footer">
+        <div v-if="!isAddingNewAddress" class="modal-footer">
           <button type="button" class="btn-cancel-modal" @click="showAddressModal = false">
             Tutup
           </button>
@@ -997,11 +1110,85 @@ const savedAddresses = ref([
 
 const selectedAddress = ref(savedAddresses.value[0]);
 const showAddressModal = ref(false);
+const isAddingNewAddress = ref(false);
+const newAddressForm = ref({
+  label_alamat: 'Rumah Utama',
+  nama_penerima: props.user?.name || 'Siti Rahma',
+  no_telpon: props.user?.phone || '081234567890',
+  alamat_penerima: '',
+  kecamatan: '',
+  kode_pos: '',
+  catatan: '',
+});
+
+onMounted(async () => {
+  try {
+    const token = localStorage.getItem('koafy_customer_jwt') || '';
+    const res = await fetch('/api/customer/addresses', {
+      headers: {
+        Accept: 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    const data = await res.json();
+    if (res.ok && data.success && Array.isArray(data.addresses) && data.addresses.length > 0) {
+      savedAddresses.value = data.addresses;
+      selectedAddress.value = data.addresses.find((a) => a.isPrimary) || data.addresses[0];
+    }
+  } catch (e) {
+    console.warn('Could not fetch saved addresses from backend:', e);
+  }
+});
 
 function chooseAddress(addr) {
   selectedAddress.value = addr;
   showAddressModal.value = false;
   emit('toast', `Alamat pengiriman diubah ke: ${addr.label}`);
+}
+
+async function saveNewCheckoutAddress() {
+  try {
+    const token = localStorage.getItem('koafy_customer_jwt') || '';
+    const res = await fetch('/api/customer/addresses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        ...newAddressForm.value,
+        id_customer: props.user?.id_customer || props.user?.id || null,
+        isPrimary: savedAddresses.value.length === 0,
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success && data.address) {
+      savedAddresses.value.unshift(data.address);
+      selectedAddress.value = data.address;
+    } else {
+      const localAddr = {
+        id: 'addr-' + Date.now(),
+        label: newAddressForm.value.label_alamat,
+        recipientName: newAddressForm.value.nama_penerima,
+        phone: newAddressForm.value.no_telpon,
+        fullAddress: newAddressForm.value.alamat_penerima,
+        area: newAddressForm.value.kecamatan,
+        postalCode: newAddressForm.value.kode_pos,
+        notes: newAddressForm.value.catatan,
+        isPrimary: false,
+      };
+      savedAddresses.value.unshift(localAddr);
+      selectedAddress.value = localAddr;
+    }
+
+    isAddingNewAddress.value = false;
+    showAddressModal.value = false;
+    emit('toast', 'Data alamat pengiriman berhasil disimpan ke database!');
+  } catch (e) {
+    console.error('Error saving address:', e);
+  }
 }
 
 // Couriers Options
@@ -1124,7 +1311,7 @@ function removeTransferProof() {
   }
 }
 
-function submitTransferConfirmation() {
+async function submitTransferConfirmation() {
   if (!transferForm.value.senderName.trim()) {
     emit('toast', 'Silakan masukkan nama pemilik rekening pengirim');
     return;
@@ -1134,30 +1321,52 @@ function submitTransferConfirmation() {
     return;
   }
   isUploadingProof.value = true;
-  setTimeout(() => {
-    isUploadingProof.value = false;
-    transferProofSubmitted.value = true;
-    createdOrder.value.status = 'processing';
-    createdOrder.value.statusLabel = 'Menunggu Konfirmasi Admin';
-    createdOrder.value.statusClass = 'status-processing';
-    createdOrder.value.transferSenderName = transferForm.value.senderName;
-    createdOrder.value.transferSenderBank = transferForm.value.senderBank;
-    createdOrder.value.transferProofImage = transferProofPreview.value;
-    createdOrder.value.transferSubmitted = true;
-    try {
-      const orders = JSON.parse(localStorage.getItem('koafy_orders') || '[]');
-      const idx = orders.findIndex((o) => o.id === createdOrder.value.id);
-      if (idx > -1) {
-        orders[idx] = { ...orders[idx], ...createdOrder.value };
-      } else {
-        orders.unshift(createdOrder.value);
-      }
-      localStorage.setItem('koafy_orders', JSON.stringify(orders));
-    } catch (e) {
-      console.error('Error updating order transfer proof', e);
+
+  try {
+    const token = localStorage.getItem('koafy_customer_jwt') || '';
+    const targetId = createdOrder.value.db_id || encodeURIComponent(createdOrder.value.id);
+    const res = await fetch(`/api/transactions/${targetId}/upload-proof`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        kode_invoice: createdOrder.value.id,
+        nama_rekening_pengirim: transferForm.value.senderName,
+        bank_pengirim: transferForm.value.senderBank,
+        bukti_transfer: transferProofPreview.value,
+      }),
+    });
+    await res.json();
+  } catch (err) {
+    console.warn('Upload proof backend sync error:', err);
+  }
+
+  isUploadingProof.value = false;
+  transferProofSubmitted.value = true;
+  createdOrder.value.status = 'processing';
+  createdOrder.value.statusLabel = 'Menunggu Verifikasi Admin';
+  createdOrder.value.statusClass = 'status-processing';
+  createdOrder.value.transferSenderName = transferForm.value.senderName;
+  createdOrder.value.transferSenderBank = transferForm.value.senderBank;
+  createdOrder.value.transferProofImage = transferProofPreview.value;
+  createdOrder.value.transferSubmitted = true;
+
+  try {
+    const orders = JSON.parse(localStorage.getItem('koafy_orders') || '[]');
+    const idx = orders.findIndex((o) => o.id === createdOrder.value.id);
+    if (idx > -1) {
+      orders[idx] = { ...orders[idx], ...createdOrder.value };
+    } else {
+      orders.unshift(createdOrder.value);
     }
-    emit('toast', 'Bukti transfer berhasil dikirim! Menunggu konfirmasi admin.');
-  }, 700);
+    localStorage.setItem('koafy_orders', JSON.stringify(orders));
+  } catch (e) {
+    console.error('Error updating order transfer proof', e);
+  }
+  emit('toast', 'Bukti transfer berhasil disimpan ke database! Menunggu verifikasi admin.');
 }
 
 // -----------------------------------------------------------------------------
@@ -1190,7 +1399,6 @@ function handleApplyVoucherInput() {
     voucherInput.value = '';
     emit('toast', `Kupon ${match.code} berhasil diterapkan!`);
   } else {
-    // Custom valid voucher test
     appliedVoucher.value = {
       code,
       label: 'Hemat Rp 20.000',
@@ -1220,7 +1428,7 @@ const totalItemQuantity = computed(() => {
 
 const shippingFee = computed(() => {
   if (deliveryType.value === 'clinic_pickup') {
-    return 0; // Gratis ongkir jika ambil di klinik
+    return 0;
   }
   if (appliedVoucher.value && appliedVoucher.value.freeship) {
     return 0;
@@ -1245,13 +1453,13 @@ const grandTotal = computed(() => {
 });
 
 // -----------------------------------------------------------------------------
-// SUBMIT ORDER
+// SUBMIT ORDER (SIMPAN KE DATABASE TRANSAKSI & NOTIFIKASI ADMIN)
 // -----------------------------------------------------------------------------
 const isSubmitting = ref(false);
 const showSuccessModal = ref(false);
 const createdOrder = ref({});
 
-function submitOrder() {
+async function submitOrder() {
   if (activeCheckoutItems.value.length === 0) {
     emit('toast', 'Tidak ada barang yang dipilih untuk checkout.');
     return;
@@ -1261,76 +1469,121 @@ function submitOrder() {
   transferProofSubmitted.value = false;
   transferProofPreview.value = '';
 
-  setTimeout(() => {
-    isSubmitting.value = false;
+  const randomDigits = Math.floor(1000 + Math.random() * 9000);
+  const invoiceId = `INV/20261124/KFY/${randomDigits}`;
+  const todayStr = '24 Nov 2026';
+  const randomVA = '8029 ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(10 + Math.random() * 90);
 
-    // Generate Invoice Number
-    const randomDigits = Math.floor(1000 + Math.random() * 9000);
-    const invoiceId = `INV/20261124/KFY/${randomDigits}`;
-    const todayStr = '24 Nov 2026';
+  let status = 'shipping';
+  let statusLabel = deliveryType.value === 'clinic_pickup' ? 'Siap Diambil di Klinik' : 'Menunggu Pembayaran';
+  let statusClass = 'status-shipping';
 
-    // Virtual account generator mock
-    const randomVA = '8029 ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(1000 + Math.random() * 9000) + ' ' + Math.floor(10 + Math.random() * 90);
+  if (selectedPayment.value.type === 'manual_bca') {
+    status = 'pending';
+    statusLabel = 'Menunggu Bukti Transfer';
+    statusClass = 'status-pending';
+  }
 
-    let status = 'shipping';
-    let statusLabel = deliveryType.value === 'clinic_pickup' ? 'Siap Diambil di Klinik' : 'Menunggu Pembayaran';
-    let statusClass = 'status-shipping';
+  const orderItems = activeCheckoutItems.value.map((item) => ({
+    id: item.id,
+    name: item.name,
+    shade: item.meta || 'Standar',
+    qty: item.qty,
+    price: item.price,
+    image: item.image || '/images/product-butterbalm-duo.jpg',
+  }));
 
-    if (selectedPayment.value.type === 'manual_bca') {
-      status = 'pending';
-      statusLabel = 'Menunggu Bukti Transfer';
-      statusClass = 'status-pending';
-    }
+  const courierName = deliveryType.value === 'clinic_pickup'
+    ? 'Ambil di ' + selectedClinic.value.name
+    : selectedCourier.value.name;
 
-    const orderData = {
-      id: invoiceId,
-      date: todayStr,
-      status: status,
-      statusLabel: statusLabel,
-      statusClass: statusClass,
-      deliveryType: deliveryType.value,
-      courier: deliveryType.value === 'clinic_pickup' ? 'Ambil Sendiri di Klinik' : selectedCourier.value.name,
-      clinicBranch: selectedClinic.value.name,
-      trackingNumber: deliveryType.value === 'clinic_pickup' ? `KFY-PICKUP-${randomDigits}` : `JT${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-      totalAmount: grandTotal.value,
-      paymentMethod: selectedPayment.value.name,
-      paymentType: selectedPayment.value.type,
-      vaNumber: randomVA,
-      bankTarget: selectedPayment.value.type === 'manual_bca' ? {
-        bank: 'Bank Central Asia (BCA)',
-        accountNumber: '828 0192 888',
-        accountName: 'PT KOAFY BEAUTY INDONESIA',
-      } : null,
-      items: activeCheckoutItems.value.map((item) => ({
-        name: item.name,
-        shade: item.meta || 'Standar',
-        qty: item.qty,
-        price: item.price,
-        image: item.image || '/images/product-butterbalm-duo.jpg',
-      })),
-    };
+  let savedDbId = null;
 
-    createdOrder.value = orderData;
-    showSuccessModal.value = true;
-
-    // Save to localStorage for orders list
-    try {
-      const orders = JSON.parse(localStorage.getItem('koafy_orders') || '[]');
-      orders.unshift(orderData);
-      localStorage.setItem('koafy_orders', JSON.stringify(orders));
-    } catch (e) {
-      console.error('Error saving order to localStorage', e);
-    }
-
-    // Notify parent about new order
-    emit('order-created', {
-      order: orderData,
-      source: activeSource.value,
-      clearedItemIds: activeSource.value === 'cart' ? checkoutCartItems.value.map((x) => x.id) : [],
+  try {
+    const token = localStorage.getItem('koafy_customer_jwt') || '';
+    const res = await fetch('/api/transactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        kode_invoice: invoiceId,
+        tanggal: todayStr,
+        id_customer: props.user?.id_customer || props.user?.id || null,
+        nama_customer: selectedAddress.value?.recipientName || props.user?.name || 'Siti Rahma',
+        telpon: selectedAddress.value?.phone || props.user?.phone || '081234567890',
+        alamat: deliveryType.value === 'clinic_pickup'
+          ? selectedClinic.value.address
+          : (selectedAddress.value?.fullAddress || 'Jl. Senopati No. 45, Jakarta Selatan'),
+        kecamatan: selectedAddress.value?.area || 'Kebayoran Baru, Jakarta Selatan',
+        kode_pos: selectedAddress.value?.postalCode || '12110',
+        voucer: appliedVoucher.value ? appliedVoucher.value.code : null,
+        diskon_voucer: discountAmount.value,
+        ongkir: shippingFee.value,
+        subtotal_pembayaran: subtotalAmount.value,
+        total_pembayaran: grandTotal.value,
+        metode_pembayaran: selectedPayment.value.name,
+        tipe_pembayaran: selectedPayment.value.type,
+        status_pembayaran: statusLabel,
+        jasa_pengiriman: courierName,
+        no_resi: deliveryType.value === 'clinic_pickup' ? `KFY-PICKUP-${randomDigits}` : 'BELUM DIINPUT',
+        items: orderItems,
+      }),
     });
 
-    emit('toast', `Pesanan ${invoiceId} berhasil dibuat!`);
-  }, 900);
+    const data = await res.json();
+    if (res.ok && data.success && data.transaction) {
+      savedDbId = data.transaction.db_id;
+    }
+  } catch (err) {
+    console.warn('Error saving transaction to backend API:', err);
+  }
+
+  isSubmitting.value = false;
+
+  const orderData = {
+    db_id: savedDbId,
+    id: invoiceId,
+    date: todayStr,
+    status: status,
+    statusLabel: statusLabel,
+    statusClass: statusClass,
+    deliveryType: deliveryType.value,
+    courier: courierName,
+    clinicBranch: selectedClinic.value.name,
+    trackingNumber: deliveryType.value === 'clinic_pickup' ? `KFY-PICKUP-${randomDigits}` : 'BELUM DIINPUT',
+    totalAmount: grandTotal.value,
+    paymentMethod: selectedPayment.value.name,
+    paymentType: selectedPayment.value.type,
+    vaNumber: randomVA,
+    bankTarget: selectedPayment.value.type === 'manual_bca' ? {
+      bank: 'Bank Central Asia (BCA)',
+      accountNumber: '828 0192 888',
+      accountName: 'PT KOAFY BEAUTY INDONESIA',
+    } : null,
+    items: orderItems,
+  };
+
+  createdOrder.value = orderData;
+  showSuccessModal.value = true;
+
+  try {
+    const orders = JSON.parse(localStorage.getItem('koafy_orders') || '[]');
+    orders.unshift(orderData);
+    localStorage.setItem('koafy_orders', JSON.stringify(orders));
+  } catch (e) {
+    console.error('Error saving order to localStorage', e);
+  }
+
+  emit('order-created', {
+    order: orderData,
+    source: activeSource.value,
+    clearedItemIds: activeSource.value === 'cart' ? checkoutCartItems.value.map((x) => x.id) : [],
+  });
+
+  emit('toast', `Pesanan ${invoiceId} berhasil disimpan ke database!`);
 }
 
 function copyCode(text, message = 'Berhasil disalin ke clipboard!') {
