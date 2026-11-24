@@ -42,7 +42,7 @@
           <div class="drawer-item-name">{{ item.name }}</div>
           <div class="drawer-item-meta">{{ item.meta }}</div>
           <div class="drawer-item-bottom">
-            <strong style="font-size:14px;">${{ item.price }}.00</strong>
+            <strong style="font-size:14px;">Rp {{ formatRupiah(item.price) }}</strong>
             <button
               type="button"
               style="font-size:12px;font-weight:700;color:#F51487;"
@@ -117,7 +117,7 @@
                 +
               </button>
             </div>
-            <strong style="font-size:14px;">${{ item.price * item.qty }}.00</strong>
+            <strong style="font-size:14px;">Rp {{ formatRupiah(item.price * item.qty) }}</strong>
           </div>
         </div>
       </div>
@@ -132,7 +132,7 @@
       </div>
       <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#1A1A1A;margin-bottom:14px;">
         <span>Total</span>
-        <span id="cart-subtotal-label">${{ finalTotal }}.00</span>
+        <span id="cart-subtotal-label">Rp {{ formatRupiah(finalTotal) }}</span>
       </div>
       <button
         type="button"
@@ -259,22 +259,26 @@ const cartTotalQty = computed(() =>
   props.cartItems.reduce((sum, item) => sum + item.qty, 0)
 );
 
+function formatRupiah(val) {
+  return Number(val || 0).toLocaleString('id-ID');
+}
+
 const rawSubtotal = computed(() =>
   props.cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
 );
 
-const discountDollar = computed(() =>
+const discountRupiah = computed(() =>
   props.activeDiscountValue > 0
-    ? Math.min(rawSubtotal.value, Math.round(props.activeDiscountValue * 0.35))
+    ? Math.min(rawSubtotal.value, props.activeDiscountValue)
     : 0
 );
 
-const finalTotal = computed(() => Math.max(0, rawSubtotal.value - discountDollar.value));
+const finalTotal = computed(() => Math.max(0, rawSubtotal.value - discountRupiah.value));
 
 const discountLabel = computed(() =>
-  discountDollar.value > 0
-    ? `-$${discountDollar.value}.00 (${props.activeDiscountValue}K Voucher)`
-    : '-$0.00'
+  discountRupiah.value > 0
+    ? `-Rp ${formatRupiah(discountRupiah.value)}`
+    : 'Rp 0'
 );
 
 function selectMobileNav(nav) {

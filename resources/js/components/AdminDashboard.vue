@@ -389,7 +389,7 @@
             </div>
             <div class="metric-value">Rp 128.450.000</div>
             <div class="metric-footer">
-              <span>Setara ~$8,420.00 USD</span>
+              <span>Target: Rp 150.000.000</span>
               <span class="metric-subtext">Dari 142 transaksi lunas</span>
             </div>
           </div>
@@ -517,7 +517,7 @@
                     </div>
                   </td>
                   <td>
-                    <strong class="order-total">${{ order.total }}.00</strong>
+                    <strong class="order-total">Rp {{ formatRupiah(order.total) }}</strong>
                   </td>
                   <td>
                     <span :class="['status-pill', order.statusClass]">{{ order.status }}</span>
@@ -1205,7 +1205,7 @@
                   <td>
                     <span class="resi-badge">{{ ord.courier }}: {{ ord.trackingNo }}</span>
                   </td>
-                  <td><strong style="color:#F51487;">${{ ord.total }}.00</strong></td>
+                  <td><strong style="color:#F51487;">Rp {{ formatRupiah(ord.total) }}</strong></td>
                   <td>
                     <span :class="['status-pill', ord.statusClass]">{{ ord.status }}</span>
                   </td>
@@ -1269,7 +1269,7 @@
                     </a>
                   </td>
                   <td><span class="status-pill pink">{{ cust.tier }}</span></td>
-                  <td><strong>${{ cust.totalSpent }}.00</strong> ({{ cust.orderCount }} pesanan)</td>
+                  <td><strong>Rp {{ formatRupiah(cust.totalSpent) }}</strong> ({{ cust.orderCount }} pesanan)</td>
                   <td>{{ cust.joinDate }}</td>
                   <td>
                     <button
@@ -1615,6 +1615,10 @@ const currentTab = ref('dashboard');
 const adminSearch = ref('');
 const orderFilter = ref('all');
 
+function formatRupiah(val) {
+  return Number(val || 0).toLocaleString('id-ID');
+}
+
 // =========================================================================
 // FLASH SALE MANAGEMENT STATE (REF IMAGE 2)
 // =========================================================================
@@ -1829,7 +1833,7 @@ const recentOrders = ref([
     waNumber: '6281245678910',
     items: 'Koafy Crystal Butterbalm Duo',
     shade: 'Rosewood & Mauve',
-    total: 68,
+    total: 288600,
     status: 'Lunas (Perlu Dikirim)',
     statusClass: 'orange',
     courier: 'J&T Express',
@@ -1844,7 +1848,7 @@ const recentOrders = ref([
     waNumber: '6282199881234',
     items: 'Koafy Velvet Lip & Brush Set',
     shade: 'Rosewood Matte',
-    total: 38,
+    total: 175000,
     status: 'Sedang Dikirim',
     statusClass: 'blue',
     courier: 'SiCepat BEST',
@@ -1859,7 +1863,7 @@ const recentOrders = ref([
     waNumber: '6287811223344',
     items: 'HSK Secret Glow Cushion SPF 50',
     shade: '02 Neutral Rose',
-    total: 42,
+    total: 185000,
     status: 'Selesai',
     statusClass: 'green',
     courier: 'J&T Express',
@@ -1874,7 +1878,7 @@ const recentOrders = ref([
     waNumber: '6281377665544',
     items: 'Koafy Soft-Square Multi Balm Trio',
     shade: '3 Shades Set',
-    total: 54,
+    total: 210000,
     status: 'Menunggu Verifikasi',
     statusClass: 'pink',
     courier: 'GoSend Instant',
@@ -2264,9 +2268,9 @@ const categoriesList = ref([
 
 // 5. Data Voucher Promo
 const vouchersList = ref([
-  { code: 'KOAFY50K', amount: 'Rp 50.000', minSpend: '$35.00', claimed: 128, quota: 200 },
-  { code: 'ROSEGLOW', amount: 'Diskon 25%', minSpend: '$50.00', claimed: 64, quota: 100 },
-  { code: 'NEWBIE', amount: 'Gratis Ongkir', minSpend: '$30.00', claimed: 210, quota: 500 },
+  { code: 'KOAFY50K', amount: 'Rp 50.000', minSpend: 'Rp 150.000', claimed: 128, quota: 200 },
+  { code: 'ROSEGLOW', amount: 'Diskon 25%', minSpend: 'Rp 200.000', claimed: 64, quota: 100 },
+  { code: 'NEWBIE', amount: 'Gratis Ongkir', minSpend: 'Rp 100.000', claimed: 210, quota: 500 },
 ]);
 
 // 6. Data Pelanggan (dengan No WhatsApp dari form register)
@@ -2278,7 +2282,7 @@ const customersList = ref([
     phone: '812-4567-8910',
     waNumber: '6281245678910',
     tier: 'Rose VIP Member',
-    totalSpent: 284,
+    totalSpent: 1240000,
     orderCount: 4,
     joinDate: '12 Nov 2026',
   },
@@ -2289,7 +2293,7 @@ const customersList = ref([
     phone: '821-9988-1234',
     waNumber: '6282199881234',
     tier: 'Gold Member',
-    totalSpent: 142,
+    totalSpent: 620000,
     orderCount: 2,
     joinDate: '14 Nov 2026',
   },
@@ -2300,7 +2304,7 @@ const customersList = ref([
     phone: '878-1122-3344',
     waNumber: '6287811223344',
     tier: 'Rose VIP Member',
-    totalSpent: 350,
+    totalSpent: 1550000,
     orderCount: 5,
     joinDate: '10 Nov 2026',
   },
@@ -2311,7 +2315,7 @@ const customersList = ref([
     phone: '813-7766-5544',
     waNumber: '6281377665544',
     tier: 'Silver Member',
-    totalSpent: 54,
+    totalSpent: 210000,
     orderCount: 1,
     joinDate: '16 Nov 2026',
   },

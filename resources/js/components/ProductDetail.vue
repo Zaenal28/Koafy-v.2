@@ -421,7 +421,7 @@ const currentProduct = computed(() => {
         id: 'na-1',
         brand: 'KOAFY PARIS',
         name: 'Koafy Crystal Butterbalm Tint — Rosewood Glow',
-        price: 38,
+        price: 156510,
         priceFormatted: 'Rp 156.510',
         oldPriceFormatted: 'Rp 200.000',
         image: '/images/product-butterbalm-1.jpg',

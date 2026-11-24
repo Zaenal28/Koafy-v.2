@@ -126,6 +126,22 @@
           @toast="showToast"
         />
       </template>
+
+      <!-- 7. CHECKOUT VIEW (http://127.0.0.1:8000/checkout) -->
+      <template v-else-if="currentView === 'checkout'">
+        <CheckoutPage
+          :user="currentUser"
+          :cart-items="cartItems"
+          :direct-buy-item="checkoutDirectItem"
+          :initial-source="checkoutSource"
+          :initial-discount-value="activeDiscountValue"
+          @back-to-home="backToHome"
+          @back-to-cart="openDrawer('cart')"
+          @order-created="handleOrderCreated"
+          @view-orders="openOrdersPage"
+          @toast="showToast"
+        />
+      </template>
     </main>
 
     <!-- Site Footer (Hidden on Auth & Admin view) -->
@@ -182,6 +198,7 @@ import FloatingWhatsAppChat from './components/FloatingWhatsAppChat.vue';
 import KoafyMakeupStorySection from './components/KoafyMakeupStorySection.vue';
 import UserProfilePage from './components/UserProfilePage.vue';
 import AboutPage from './components/AboutPage.vue';
+import CheckoutPage from './components/CheckoutPage.vue';
 
 const defaultUser = {
   name: 'Siti Rahma',
@@ -201,9 +218,11 @@ watch(currentUser, (val) => {
 }, { deep: true });
 
 const activeNav = ref('home');
-const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin' | 'profile' | 'about'
+const currentView = ref('home'); // 'home' | 'products' | 'detail' | 'auth' | 'admin' | 'profile' | 'about' | 'checkout'
 const previousView = ref('home');
 const authMode = ref('login'); // 'login' | 'register'
+const checkoutSource = ref('cart'); // 'cart' | 'direct'
+const checkoutDirectItem = ref(null);
 const selectedProduct = ref(null);
 const initialCategory = ref('all');
 const initialSubcategory = ref(null);
@@ -226,6 +245,14 @@ function syncRouteFromPath() {
   ) {
     currentView.value = 'about';
     activeNav.value = 'our-story';
+  } else if (
+    path === '/checkout' ||
+    path === '/cekout' ||
+    path === '/pembayaran' ||
+    path === '/bayar'
+  ) {
+    currentView.value = 'checkout';
+    activeNav.value = '';
   } else if (path === '/profile' || path === '/akun' || path === '/alamat') {
     currentView.value = 'profile';
     userProfileTab.value = 'addresses';
@@ -273,15 +300,15 @@ const activeDiscountValue = ref(0);
 const claimedVouchersCount = ref(0);
 
 const wishlistItems = ref([
-  { id: 'w1', name: 'Koafy Velvet Lip & Brush Set', meta: 'Rosewood Matte • 4.5g', price: 38 },
-  { id: 'w2', name: 'Koafy Soft-Square Multi Balm Trio', meta: '3 Shades Set', price: 54 },
+  { id: 'w1', name: 'Koafy Velvet Lip & Brush Set', meta: 'Rosewood Matte • 4.5g', price: 175000 },
+  { id: 'w2', name: 'Koafy Soft-Square Multi Balm Trio', meta: '3 Shades Set', price: 210000 },
 ]);
 
 const wishlistIds = computed(() => wishlistItems.value.map((item) => item.id));
 
 const cartItems = ref([
-  { id: 'c1', name: 'Koafy Crystal Butterbalm Duo', meta: 'Rosewood & Mauve', price: 68, qty: 1 },
-  { id: 'c2', name: 'HSK Secret Pink Radiance Cream', meta: '50 ml • Brightening', price: 42, qty: 2 },
+  { id: 'c1', name: 'Koafy Crystal Butterbalm Duo', meta: 'Rosewood & Mauve', price: 288600, qty: 1 },
+  { id: 'c2', name: 'HSK Secret Pink Radiance Cream', meta: '50 ml • Brightening', price: 185000, qty: 2 },
 ]);
 
 const cartTotalQty = computed(() =>
@@ -312,9 +339,9 @@ function closeAllDrawers() {
 }
 
 function handleClaimVoucher(slide) {
-  activeDiscountValue.value = 50;
+  activeDiscountValue.value = 50000;
   claimedVouchersCount.value = 5;
-  showToast(`${slide.campaignTitle} berhasil diklaim & diterapkan ke Shopping Bag!`);
+  showToast(`${slide.campaignTitle} berhasil diklaim & diterapkan potongan Rp 50.000 ke Shopping Bag!`);
 }
 
 function handleSelectCategory(cat) {
@@ -450,7 +477,7 @@ function toggleFavorite(product) {
       id: product.id,
       name: product.name,
       meta: `${product.brand || 'KOAFY'} • ${product.volume || '4.5g'}`,
-      price: product.price || 38,
+      price: product.price || 156510,
     });
     showToast(`${product.name} ditambahkan ke Favorit ❤️`);
   }
@@ -468,16 +495,37 @@ function handleAddNewArrivalToCart(product) {
       meta: product.selectedShade
         ? `${product.brand || 'KOAFY'} • ${product.selectedShade}`
         : `${product.brand || 'KOAFY'} • ${product.volume || 'Standar'}`,
-      price: product.price || 38,
+      price: product.price || 156510,
       qty: addQty,
     });
   }
   showToast(`${product.name} (${addQty} item) ditambahkan ke Shopping Bag!`);
 }
 
+function openCheckoutPage(source = 'cart', directItem = null) {
+  checkoutSource.value = source;
+  checkoutDirectItem.value = directItem;
+  previousView.value = currentView.value;
+  currentView.value = 'checkout';
+  closeAllDrawers();
+  if (window.location.pathname !== '/checkout') {
+    window.history.pushState(null, '', '/checkout');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function handleBuyNow(product) {
-  handleAddNewArrivalToCart(product);
-  openDrawer('cart');
+  const directItem = {
+    id: product.id || 'direct-' + Date.now(),
+    name: product.name,
+    meta: product.selectedShade
+      ? `${product.brand || 'KOAFY'} • ${product.selectedShade}`
+      : `${product.brand || 'KOAFY'} • ${product.volume || 'Standar'}`,
+    price: product.price || 156510,
+    qty: product.qty || 1,
+    image: product.image || (product.images && product.images[0]) || '/images/product-butterbalm-duo.jpg',
+  };
+  openCheckoutPage('direct', directItem);
 }
 
 function moveToCart(itemId) {
@@ -508,7 +556,24 @@ function changeCartQty({ id, delta }) {
 }
 
 function handleCheckout() {
-  closeAllDrawers();
-  showToast('Melanjutkan ke halaman Checkout Koafy...');
+  openCheckoutPage('cart');
+}
+
+function handleOrderCreated({ order, source, clearedItemIds }) {
+  try {
+    const existingOrders = JSON.parse(localStorage.getItem('koafy_orders') || '[]');
+    existingOrders.unshift(order);
+    localStorage.setItem('koafy_orders', JSON.stringify(existingOrders));
+  } catch (e) {
+    console.error('Error saving order', e);
+  }
+
+  if (source === 'cart' && clearedItemIds && clearedItemIds.length) {
+    cartItems.value = cartItems.value.filter((item) => !clearedItemIds.includes(item.id));
+  }
+}
+
+function openOrdersPage() {
+  openUserProfile('orders');
 }
 </script>

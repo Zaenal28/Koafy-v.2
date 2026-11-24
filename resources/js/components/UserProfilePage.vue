@@ -498,7 +498,7 @@
                       <p class="order-item-meta">{{ item.shade }} • {{ item.qty }} pcs</p>
                     </div>
                     <div class="order-item-price">
-                      ${{ item.price }}.00
+                      Rp {{ formatRupiah(item.price) }}
                     </div>
                   </div>
                 </div>
@@ -507,7 +507,7 @@
                 <div class="order-card-footer">
                   <div class="order-total-amount">
                     <span>Total Pembayaran:</span>
-                    <strong>${{ order.totalAmount }}.00</strong>
+                    <strong>Rp {{ formatRupiah(order.totalAmount) }}</strong>
                   </div>
                   <div class="order-action-buttons">
                     <button
@@ -574,7 +574,7 @@
                   <h3 class="wishlist-item-title">{{ item.name }}</h3>
                   <p class="wishlist-item-meta">{{ item.meta }}</p>
                   <div class="wishlist-price-row">
-                    <span class="wishlist-price">${{ item.price }}.00</span>
+                    <span class="wishlist-price">Rp {{ formatRupiah(item.price) }}</span>
                     <span class="stock-badge">Stok Tersedia</span>
                   </div>
                   <div class="wishlist-actions-row">
@@ -639,7 +639,7 @@
                   <div class="cart-item-info">
                     <h3 class="cart-product-title">{{ item.name }}</h3>
                     <p class="cart-product-meta">{{ item.meta }}</p>
-                    <div class="cart-product-unit-price">${{ item.price }}.00</div>
+                    <div class="cart-product-unit-price">Rp {{ formatRupiah(item.price) }}</div>
                   </div>
 
                   <!-- Quantity Stepper -->
@@ -665,7 +665,7 @@
 
                   <!-- Subtotal -->
                   <div class="cart-subtotal-price">
-                    ${{ item.price * item.qty }}.00
+                    Rp {{ formatRupiah(item.price * item.qty) }}
                   </div>
                 </div>
               </div>
@@ -675,11 +675,11 @@
                 <h3 class="summary-card-title">Ringkasan Belanja</h3>
                 <div class="summary-row">
                   <span>Total Harga ({{ cartTotalQty }} barang)</span>
-                  <span>${{ cartSubtotal }}.00</span>
+                  <span>Rp {{ formatRupiah(cartSubtotal) }}</span>
                 </div>
                 <div class="summary-row discount-row">
                   <span>Diskon Voucher Member</span>
-                  <span>-${{ activeDiscountValue || 0 }}.00</span>
+                  <span>-Rp {{ formatRupiah(activeDiscountValue || 0) }}</span>
                 </div>
                 <div class="summary-row">
                   <span>Estimasi Ongkos Kirim</span>
@@ -688,7 +688,7 @@
                 <div class="summary-divider"></div>
                 <div class="summary-total-row">
                   <span>Total Belanja</span>
-                  <strong class="total-amount">${{ Math.max(0, cartSubtotal - (activeDiscountValue || 0)) }}.00</strong>
+                  <strong class="total-amount">Rp {{ formatRupiah(Math.max(0, cartSubtotal - (activeDiscountValue || 0))) }}</strong>
                 </div>
 
                 <button
@@ -1051,7 +1051,11 @@ const orderStatuses = [
   { id: 'cancelled', label: 'Dibatalkan' },
 ];
 
-const sampleOrders = ref([
+function formatRupiah(val) {
+  return Number(val || 0).toLocaleString('id-ID');
+}
+
+const defaultSampleOrders = [
   {
     id: 'INV/20261120/KFY/0892',
     date: '20 Nov 2026',
@@ -1060,20 +1064,20 @@ const sampleOrders = ref([
     statusClass: 'status-completed',
     courier: 'J&T Express - Regular',
     trackingNumber: 'JT9283746102',
-    totalAmount: 92,
+    totalAmount: 385000,
     items: [
       {
         name: 'Koafy Soft-Square Multi Balm Trio',
         shade: 'Trio Set 01 (Soft Rose & Berry)',
         qty: 1,
-        price: 54,
+        price: 210000,
         image: '/images/product-butterbalm-1.jpg',
       },
       {
         name: 'Koafy Velvet Lip & Brush Set',
         shade: 'Rosewood Matte',
         qty: 1,
-        price: 38,
+        price: 175000,
         image: '/images/product-lip-velvet.jpg',
       },
     ],
@@ -1086,18 +1090,35 @@ const sampleOrders = ref([
     statusClass: 'status-shipping',
     courier: 'SiCepat BEST (1 Hari Sampai)',
     trackingNumber: 'SC8837192800',
-    totalAmount: 68,
+    totalAmount: 288600,
     items: [
       {
         name: 'Koafy Crystal Butterbalm Duo',
         shade: 'Mauve Pink Duo Set',
         qty: 1,
-        price: 68,
+        price: 288600,
         image: '/images/product-butterbalm-duo.jpg',
       },
     ],
   },
-]);
+];
+
+function loadSavedOrders() {
+  try {
+    const saved = localStorage.getItem('koafy_orders');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return [...parsed, ...defaultSampleOrders];
+      }
+    }
+  } catch (e) {
+    console.error('Error loading saved orders', e);
+  }
+  return defaultSampleOrders;
+}
+
+const sampleOrders = ref(loadSavedOrders());
 
 const filteredOrders = computed(() => {
   if (currentOrderStatus.value === 'all') return sampleOrders.value;

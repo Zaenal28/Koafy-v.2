@@ -244,7 +244,7 @@ const flashProducts = ref([
     brand: 'KOAFY PARIS',
     volume: '4.5 G',
     name: 'Koafy Crystal Butterbalm Tint — Rosewood Glow',
-    price: 36, // Di dollar setara ~$36
+    price: 146510,
     priceFormatted: 'Rp 146.510',      // Kurang 10 rb dari Rp 156.510
     oldPriceFormatted: 'Rp 190.000',  // Harga coret
     discountPercent: 23,
@@ -258,7 +258,7 @@ const flashProducts = ref([
     brand: 'KOAFY PARIS',
     volume: '4.5 G',
     name: 'Koafy Crystal Butterbalm Tint — Berry Mauve',
-    price: 36,
+    price: 146510,
     priceFormatted: 'Rp 146.510',      // Kurang 10 rb dari Rp 156.510
     oldPriceFormatted: 'Rp 190.000',  // Harga coret
     discountPercent: 23,
@@ -272,7 +272,7 @@ const flashProducts = ref([
     brand: 'HSK SECRET',
     volume: 'SET DUO',
     name: 'Koafy Velvet Lip & Precision Brush Set',
-    price: 42,
+    price: 165000,
     priceFormatted: 'Rp 165.000',      // Kurang 10 rb dari Rp 175.000
     oldPriceFormatted: 'Rp 215.000',  // Harga coret
     discountPercent: 27,
@@ -286,7 +286,7 @@ const flashProducts = ref([
     brand: 'KOAFY PARIS',
     volume: '2 X 4.5 G',
     name: 'Koafy Crystal Butterbalm Duo Bundle',
-    price: 65,
+    price: 278600,
     priceFormatted: 'Rp 278.600',      // Kurang 10 rb dari Rp 288.600
     oldPriceFormatted: 'Rp 360.000',  // Harga coret
     discountPercent: 25,
@@ -300,7 +300,7 @@ const flashProducts = ref([
     brand: 'KOAFY PARIS',
     volume: '3 SHADES',
     name: 'Koafy Soft-Square Multi Balm Trio Compact',
-    price: 51,
+    price: 200000,
     priceFormatted: 'Rp 200.000',      // Kurang 10 rb dari Rp 210.000
     oldPriceFormatted: 'Rp 255.000',  // Harga coret
     discountPercent: 24,

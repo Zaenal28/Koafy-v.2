@@ -1447,6 +1447,16 @@ const allProducts = ref([
   },
 ]);
 
+// Normalisasi harga numerik ke Rupiah agar filter harga & penambahan ke keranjang konsisten
+allProducts.value.forEach((p) => {
+  if (p.priceFormatted) {
+    const parsed = parseInt(p.priceFormatted.replace(/\D/g, ''), 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      p.price = parsed;
+    }
+  }
+});
+
 // Header Title dynamic computation
 const currentHeaderTitle = computed(() => {
   if (selectedSubcategory.value) {
